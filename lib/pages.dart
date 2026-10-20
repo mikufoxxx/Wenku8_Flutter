@@ -9,6 +9,9 @@ import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:flutter/services.dart';
 
 import 'app_ui.dart';
+import 'app_background.dart';
+import 'background_settings_page.dart';
+import 'reader_background.dart';
 import 'app_search_field.dart';
 import 'setting_menu.dart';
 import 'cover_images.dart';
@@ -2419,6 +2422,33 @@ class SettingsPage extends StatelessWidget {
       child: Column(
         children: [
           _appearanceSetting(context),
+          const Divider(height: 22),
+          FeatureEntry(
+            title: '主页背景颜色',
+            icon: CupertinoIcons.paintbrush,
+            subtitle:
+                state.homeBackgroundFor(Theme.of(context).brightness) == null
+                ? '当前模式跟随默认外观'
+                : backgroundHex(
+                    state.homeBackgroundFor(Theme.of(context).brightness)!,
+                  ),
+            onTap: () => pushNovelPage<void>(
+              context,
+              HomeBackgroundPage(state: state),
+              reduceMotion: state.reduceMotion,
+            ),
+          ),
+          const Divider(height: 22),
+          FeatureEntry(
+            title: '阅读背景图片',
+            icon: CupertinoIcons.photo,
+            subtitle: '导入图片、显示方式与遮罩',
+            onTap: () => pushNovelPage<void>(
+              context,
+              ReaderBackgroundPage(state: state),
+              reduceMotion: state.reduceMotion,
+            ),
+          ),
           const Divider(height: 22),
           LanguageSettingMenu(
             key: const ValueKey('settings-language'),
@@ -6203,7 +6233,7 @@ class _ReaderPageState extends State<ReaderPage>
     _layoutWidth = MediaQuery.sizeOf(context).width;
     _layoutTypeface = widget.state.readerFontId;
     final appTheme = Theme.of(context);
-    final appDark = appTheme.brightness == Brightness.dark;
+    final appDark = appOriginalBrightness(appTheme) == Brightness.dark;
     return PopScope<void>(
       canPop: _allowExit,
       onPopInvokedWithResult: (didPop, _) {
@@ -6554,8 +6584,9 @@ class _ReaderPageState extends State<ReaderPage>
           value: novelSystemUiStyle(
             ThemeData.estimateBrightnessForColor(prefs.background(dark)),
           ),
-          child: ColoredBox(
-            color: prefs.background(dark),
+          child: ReaderBackgroundSurface(
+            preferences: prefs,
+            paper: prefs.background(dark),
             child: DefaultTextStyle.merge(
               style: TextStyle(color: prefs.foreground(dark)),
               child: _paginated && !ready && !failed

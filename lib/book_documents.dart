@@ -45,6 +45,18 @@ class BookScanSnapshot {
 
 class BookDocuments {
   static const channel = MethodChannel('org.mewx.wenku8/book_documents');
+  Future<BookDocumentSelection?> pickBackgroundImage() async {
+    final value = await channel.invokeMapMethod<String, dynamic>(
+      'pickBackgroundImage',
+    );
+    return value == null
+        ? null
+        : BookDocumentSelection(
+            name: value['name'] as String,
+            path: value['path'] as String,
+          );
+  }
+
   Future<BookDocumentSelection?> pickFont() async {
     final value = await channel.invokeMapMethod<String, dynamic>('pickFont');
     return value == null

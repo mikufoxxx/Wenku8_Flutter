@@ -112,7 +112,7 @@ class BookDocuments(private val activity: Activity) : MethodChannel.MethodCallHa
                     } else activity.requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), ALL_REQUEST)
                 } catch (_: Exception) { pending = null; result.error("permission", "系统未提供共享存储授权，请选择指定文件夹", null) }
             }
-            "pickBook", "pickBooks", "pickFont", "openSync", "createSync", "selectScanFolder" -> {
+            "pickBook", "pickBooks", "pickFont", "pickBackgroundImage", "openSync", "createSync", "selectScanFolder" -> {
                 if (pending != null) { result.error("busy", "请先完成当前文件选择", null); return }
                 val create = call.method == "createSync"
                 val folder = call.method == "selectScanFolder"
@@ -120,7 +120,11 @@ class BookDocuments(private val activity: Activity) : MethodChannel.MethodCallHa
                 val intent = Intent(if (folder) Intent.ACTION_OPEN_DOCUMENT_TREE else if (create) Intent.ACTION_CREATE_DOCUMENT else if (choosingBooks) Intent.ACTION_GET_CONTENT else Intent.ACTION_OPEN_DOCUMENT).apply {
                     if (!folder) { addCategory(Intent.CATEGORY_OPENABLE); type = "*/*" }
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-                    if (!folder && call.method != "pickFont") addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    if (!folder && call.method != "pickFont" && call.method != "pickBackgroundImage") addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    if (call.method == "pickBackgroundImage") {
+                        type = "image/*"
+                        putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/jpeg", "image/png", "image/webp"))
+                    }
                     if (create) { type = "application/octet-stream"; putExtra(Intent.EXTRA_TITLE, "文库同步.wenku8sync") }
                     if (call.method == "pickBook" || call.method == "pickBooks") {
                         putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("text/*", "application/epub+zip", "application/zip", "application/x-zip-compressed", "application/x-mobipocket-ebook", "application/vnd.amazon.ebook", "application/pdf", "application/rtf", "application/xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/octet-stream"))
@@ -244,6 +248,11 @@ class BookDocuments(private val activity: Activity) : MethodChannel.MethodCallHa
         background(operation.result) {
             if (operation.method == "selectScanFolder") {
                 scanner.select(uri, data.flags)
+            } else if (operation.method == "pickBackgroundImage") {
+                val target = File.createTempFile("import-", ".source", root)
+                try { copy(uri, target, 32L * 1024 * 1024) }
+                catch (error: Exception) { target.delete(); throw error }
+                mapOf("name" to name(uri, "背景图片"), "path" to target.path)
             } else if (operation.method == "pickFont") {
                 val display = name(uri)
                 require(display.substringAfterLast('.').lowercase() in setOf("ttf", "otf")) { "请选择 TTF 或 OTF 字体" }

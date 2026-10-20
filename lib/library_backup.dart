@@ -10,9 +10,12 @@ import 'local_book_media.dart';
 import 'reader_preferences.dart';
 import 'user_fonts.dart';
 import 'illustration_placement.dart';
+import 'app_background.dart';
 
 final backupPreferenceKeys = <String>{
   'theme',
+  'homeBackground',
+  'homeBackgroundDark',
   'appLanguage',
   'readerFontSize',
   'readerLineHeight',
@@ -217,6 +220,9 @@ Map<String, Object> _validateRecords(Map<String, dynamic> input) {
         'appCustomFont' =>
           value == '' ||
               (validFontChoice(value) && (value as String).startsWith('font_')),
+        'homeBackground' || 'homeBackgroundDark' =>
+          value is String &&
+              (value.isEmpty || parseBackgroundHex(value) != null),
         'readerTypeface' => validFontChoice(value, follow: true),
         'readerFontSize' => _number(value, 15, 27),
         'readerLineHeight' => _number(value, 1.3, 2.2),

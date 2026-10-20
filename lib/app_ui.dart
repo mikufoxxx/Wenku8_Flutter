@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'app_background.dart';
 import 'dart:math' as math;
 import 'library_reflow.dart';
 import 'package:flutter/foundation.dart' show ValueListenable;
@@ -306,6 +307,9 @@ class Atmosphere extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final customBackground = Theme.of(
+      context,
+    ).extension<AppBackground>()?.color;
     final content = headerBackground == null
         ? child
         : Stack(
@@ -330,13 +334,16 @@ class Atmosphere extends StatelessWidget {
         : content;
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: dark
-              ? [ArchiveDesign.darkBackground, ArchiveDesign.darkSurface]
-              : [ArchiveDesign.surface, ArchiveDesign.background],
-        ),
+        color: customBackground,
+        gradient: customBackground != null
+            ? null
+            : LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: dark
+                    ? [ArchiveDesign.darkBackground, ArchiveDesign.darkSurface]
+                    : [ArchiveDesign.surface, ArchiveDesign.background],
+              ),
       ),
       child: NativeScrollEdgeGroup(
         child: shareGlass ? NativeGlassGroup(child: background) : background,

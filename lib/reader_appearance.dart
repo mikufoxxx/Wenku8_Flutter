@@ -6,17 +6,20 @@ import 'app_ui.dart';
 import 'glass_palette.dart';
 import 'library_state.dart';
 import 'reader_preferences.dart';
+import 'app_background.dart';
+import 'reader_background.dart';
 
 ThemeData readerTheme(
   ThemeData app,
   ReaderPreferences preferences, {
   String? fontFamily,
 }) {
-  final appDark = app.brightness == Brightness.dark;
+  final appDark = appOriginalBrightness(app) == Brightness.dark;
   final paper = preferences.background(appDark);
   final brightness = ThemeData.estimateBrightnessForColor(paper);
   final dark = brightness == Brightness.dark;
-  final base = brightness == app.brightness
+  final base =
+      brightness == app.brightness && app.extension<AppBackground>() == null
       ? app
       : novelTheme(brightness, fontFamily: fontFamily);
   final ink = preferences.foreground(appDark);
@@ -62,7 +65,8 @@ ThemeData readerTheme(
     ),
     extensions: [
       ...base.extensions.values.where(
-        (extension) => extension is! GlassPalette,
+        (extension) =>
+            extension is! GlassPalette && extension is! AppBackground,
       ),
       GlassPalette(
         tint: dark ? raised(.10) : Color.lerp(paper, Colors.white, .24)!,
@@ -118,11 +122,14 @@ class _ReaderAppearanceState extends State<ReaderAppearance> {
       final theme = _resolve();
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: novelSystemUiStyle(theme.brightness),
-        child: Theme(
-          data: theme,
-          child: DefaultTextStyle(
-            style: theme.textTheme.bodyMedium!,
-            child: IconTheme(data: theme.iconTheme, child: child!),
+        child: ReaderBackgroundScope(
+          store: widget.state.backgrounds,
+          child: Theme(
+            data: theme,
+            child: DefaultTextStyle(
+              style: theme.textTheme.bodyMedium!,
+              child: IconTheme(data: theme.iconTheme, child: child!),
+            ),
           ),
         ),
       );

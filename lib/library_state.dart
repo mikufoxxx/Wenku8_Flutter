@@ -16,6 +16,8 @@ import 'app_language.dart';
 import 'local_library_preferences.dart';
 import 'user_fonts.dart';
 import 'illustration_placement.dart';
+import 'app_background.dart';
+import 'reader_background.dart';
 
 class ReadingPosition {
   const ReadingPosition({
@@ -144,8 +146,18 @@ class ReaderBookmark {
 }
 
 class LibraryState extends ChangeNotifier {
-  LibraryState(this._prefs, {UserFontStore? fonts})
-    : fonts = fonts ?? UserFontStore() {
+  LibraryState(
+    this._prefs, {
+    UserFontStore? fonts,
+    ReaderBackgroundStore? backgrounds,
+  }) : fonts = fonts ?? UserFontStore(),
+       backgrounds = backgrounds ?? ReaderBackgroundStore() {
+    _homeBackgroundColor = parseBackgroundHex(
+      _prefs.get('homeBackground')?.toString() ?? '',
+    );
+    _homeBackgroundDarkColor = parseBackgroundHex(
+      _prefs.get('homeBackgroundDark')?.toString() ?? '',
+    );
     _shelf.addAll(
       ((_prefs.get('shelf') is List<String>)
               ? _prefs.getStringList('shelf')!
@@ -326,6 +338,14 @@ class LibraryState extends ChangeNotifier {
   }
 
   final SharedPreferences _prefs;
+  final ReaderBackgroundStore backgrounds;
+  Color? _homeBackgroundColor;
+  Color? get homeBackgroundColor => _homeBackgroundColor;
+  Color? _homeBackgroundDarkColor;
+  Color? homeBackgroundFor(Brightness brightness) =>
+      brightness == Brightness.dark
+      ? _homeBackgroundDarkColor
+      : _homeBackgroundColor;
   final UserFontStore fonts;
   String? fontError;
   LocalLibraryPreferences? _organization;
@@ -1452,6 +1472,38 @@ class LibraryState extends ChangeNotifier {
     await writeLibraryPreference(_prefs, 'theme', mode.name);
   }
 
+  Future<void> setHomeBackgroundColor(
+    Color? color, {
+    Brightness brightness = Brightness.light,
+  }) async {
+    if (_restoreBarrier case final barrier?) {
+      return barrier.future.then(
+        (_) => setHomeBackgroundColor(color, brightness: brightness),
+      );
+    }
+    final normalized = color == null
+        ? null
+        : Color(0xff000000 | (color.toARGB32() & 0xffffff));
+    await _queuePositionWrite(() async {
+      await writeLibraryPreference(
+        _prefs,
+        brightness == Brightness.dark ? 'homeBackgroundDark' : 'homeBackground',
+        normalized == null ? '' : backgroundHex(normalized),
+      );
+      if (brightness == Brightness.dark) {
+        _homeBackgroundDarkColor = normalized;
+      } else {
+        _homeBackgroundColor = normalized;
+      }
+      if (!_disposed) {
+        _application.notifyListeners();
+        _appearance.notifyListeners();
+        _settings.notifyListeners();
+        notifyListeners();
+      }
+    });
+  }
+
   Future<void> setAppTypeface(AppTypeface value) => setAppFont(value.name);
 
   Future<void> setAppFont(String choice) => _setFont(choice, reader: false);
@@ -1631,6 +1683,12 @@ class LibraryState extends ChangeNotifier {
     'local_shelf_hidden': _hiddenLocalBooks.map((id) => '$id').toList(),
     'recentSearches': _recentSearches,
     'theme': _theme.name,
+    'homeBackground': _homeBackgroundColor == null
+        ? ''
+        : backgroundHex(_homeBackgroundColor!),
+    'homeBackgroundDark': _homeBackgroundDarkColor == null
+        ? ''
+        : backgroundHex(_homeBackgroundDarkColor!),
     'readerFontSize': _fontSize,
     'appLanguage': language.name,
     'readerLineHeight': _lineHeight,
@@ -1840,6 +1898,12 @@ class LibraryState extends ChangeNotifier {
         changed['local_shelf_hidden'] = hiddenLocal.map((id) => '$id').toList();
         changed['recentSearches'] = searches;
         if (importPreferences) {
+          if (records['homeBackground'] case final String value) {
+            _homeBackgroundColor = parseBackgroundHex(value);
+          }
+          if (records['homeBackgroundDark'] case final String value) {
+            _homeBackgroundDarkColor = parseBackgroundHex(value);
+          }
           for (final key in backupPreferenceKeys) {
             if (records[key] case final value?) changed[key] = value;
           }

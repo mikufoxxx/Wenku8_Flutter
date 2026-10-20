@@ -12,6 +12,7 @@ import 'library_state.dart';
 import 'local_platform.dart';
 import 'reader_preferences.dart';
 import 'font_settings_page.dart';
+import 'background_settings_page.dart';
 import 'glass_choices.dart';
 import 'setting_menu.dart';
 
@@ -420,6 +421,24 @@ class _ReaderToolsState extends State<ReaderTools> {
                   ),
                 ),
               ],
+            ),
+          ),
+          _adjustment(
+            GlassTextButton(
+              key: const ValueKey('reader-background-choice'),
+              onPressed: () => pushNovelPage<void>(
+                context,
+                ReaderBackgroundPage(state: widget.state),
+                reduceMotion: widget.state.reduceMotion,
+              ),
+              child: const Row(
+                children: [
+                  Icon(CupertinoIcons.photo, size: 20),
+                  SizedBox(width: 12),
+                  Expanded(child: AppText('阅读背景图片')),
+                  Icon(CupertinoIcons.chevron_forward, size: 14),
+                ],
+              ),
             ),
           ),
           _adjustment(

@@ -6,6 +6,7 @@ import 'reader_book_layout.dart';
 import 'reader_content.dart';
 import 'reader_pagination.dart';
 import 'reader_preferences.dart';
+import 'reader_background.dart';
 import 'reader_reflow.dart';
 import 'reader_turn_motion.dart';
 import 'reader_illustrations.dart';
@@ -961,7 +962,16 @@ class _ReaderPagedViewState extends State<ReaderPagedView>
                     widget.onChanged();
                   },
                   itemBuilder: (context, index) {
-                    final body = _spreadBody(index);
+                    final content = _spreadBody(index);
+                    final body = widget.preferences.backgroundImage == null
+                        ? content
+                        : ReaderBackgroundSurface(
+                            preferences: widget.preferences,
+                            paper: widget.preferences.background(
+                              Theme.of(context).brightness == Brightness.dark,
+                            ),
+                            child: content,
+                          );
                     final incoming = index == _turnSpread;
                     final turning = _swipeOrigin != null && _turnSpread != null;
                     final visible =
@@ -1065,8 +1075,9 @@ class _ReaderPagedViewState extends State<ReaderPagedView>
                         ArchivePlaneTransition(
                           key: const ValueKey('reader-book-incoming'),
                           animation: _arrival,
-                          child: ColoredBox(
-                            color: widget.preferences.background(
+                          child: ReaderBackgroundSurface(
+                            preferences: widget.preferences,
+                            paper: widget.preferences.background(
                               Theme.of(context).brightness == Brightness.dark,
                             ),
                             child: turning,

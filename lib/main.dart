@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_ui.dart';
+import 'app_background.dart';
 import 'app_licenses.dart';
 import 'catalog.dart';
 import 'legacy_wenku_repository.dart';
@@ -184,11 +185,14 @@ class _NovelAppState extends State<NovelApp> with WidgetsBindingObserver {
 
   static final _themes = <(TargetPlatform, Brightness, String), ThemeData>{};
 
-  ThemeData _theme(Brightness brightness) => _themes.putIfAbsent((
-    defaultTargetPlatform,
-    brightness,
-    state.appFontId,
-  ), () => novelTheme(brightness, fontFamily: state.appFontFamily));
+  ThemeData _theme(Brightness brightness) => withAppBackground(
+    _themes.putIfAbsent((
+      defaultTargetPlatform,
+      brightness,
+      state.appFontId,
+    ), () => novelTheme(brightness, fontFamily: state.appFontFamily)),
+    state.homeBackgroundFor(brightness),
+  );
 
   @override
   void dispose() {

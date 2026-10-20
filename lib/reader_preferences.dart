@@ -2,6 +2,19 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'archive_design.dart';
 
+bool validReaderBackground(Object? value) =>
+    value is String && RegExp(r'^background_[a-f0-9]{64}$').hasMatch(value);
+
+enum ReaderBackgroundFit {
+  cover('铺满裁切', BoxFit.cover),
+  contain('完整显示', BoxFit.contain),
+  fill('拉伸铺满', BoxFit.fill);
+
+  const ReaderBackgroundFit(this.label, this.fit);
+  final String label;
+  final BoxFit fit;
+}
+
 enum ReaderPaper {
   system('跟随外观'),
   milk('奶白'),
@@ -71,7 +84,13 @@ class ReaderPreferences {
     this.edgeBrightness = false,
     this.pageEffect = ReaderPageEffect.staggered,
     this.hideSystemStatus = false,
+    this.backgroundImage,
+    this.backgroundFit = ReaderBackgroundFit.cover,
+    this.backgroundOverlay = .7,
   });
+  final String? backgroundImage;
+  final ReaderBackgroundFit backgroundFit;
+  final double backgroundOverlay;
   final ReaderPaper paper;
   final double margin, paragraphGap, autoScrollSpeed;
   // Null horizontal edges preserve old records and existing margin callers.
@@ -129,6 +148,9 @@ class ReaderPreferences {
     'edgeBrightness': edgeBrightness,
     'pageEffect': pageEffect.name,
     'hideSystemStatus': hideSystemStatus,
+    if (backgroundImage != null) 'backgroundImage': backgroundImage,
+    'backgroundFit': backgroundFit.name,
+    'backgroundOverlay': backgroundOverlay,
   };
   factory ReaderPreferences.fromJson(Map<String, dynamic> json) {
     double number(String key, double min, double max, double fallback) {
@@ -152,7 +174,16 @@ class ReaderPreferences {
         throw const FormatException('阅读偏好格式有误');
       }
     }
+    if (json['backgroundImage'] != null &&
+        !validReaderBackground(json['backgroundImage'])) {
+      throw const FormatException('阅读背景图片记录无效');
+    }
     return ReaderPreferences(
+      backgroundImage: json['backgroundImage'] as String?,
+      backgroundFit: ReaderBackgroundFit.values.byName(
+        json['backgroundFit'] ?? 'cover',
+      ),
+      backgroundOverlay: number('backgroundOverlay', 0, 1, .7),
       paper: ReaderPaper.values.firstWhere(
         (p) => p.name == (json['paper'] ?? 'system'),
       ),
@@ -211,7 +242,16 @@ class ReaderPreferences {
     bool? edgeBrightness,
     ReaderPageEffect? pageEffect,
     bool? hideSystemStatus,
+    String? backgroundImage,
+    bool clearBackgroundImage = false,
+    ReaderBackgroundFit? backgroundFit,
+    double? backgroundOverlay,
   }) => ReaderPreferences(
+    backgroundImage: clearBackgroundImage
+        ? null
+        : backgroundImage ?? this.backgroundImage,
+    backgroundFit: backgroundFit ?? this.backgroundFit,
+    backgroundOverlay: backgroundOverlay ?? this.backgroundOverlay,
     paper: paper ?? this.paper,
     margin: margin ?? this.margin,
     marginLeft: marginLeft ?? (margin ?? this.marginLeft),
