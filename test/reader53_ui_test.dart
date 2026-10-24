@@ -113,28 +113,30 @@ void main() {
       );
       await tester.tap(control('阅读设置'));
       await tester.pumpAndSettle();
-      for (final tab in ['排版', '操作', '书签', '听书']) {
-        expect(find.text(tab), findsOneWidget);
+      for (final tab in ['外观', '排版', '翻页', '显示']) {
+        expect(find.text(tab), findsWidgets);
       }
       expect(
         find.byKey(const ValueKey('reader-progress-slider')),
         findsNothing,
       );
       await captureReview(tester, boundary, 'unified-reader-settings');
-      await tester.tap(find.text('听书'));
+      await tester.tap(control('关闭阅读设置'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('听书').first);
       await tester.pumpAndSettle();
       expect(find.byType(ListeningPanel), findsOneWidget);
-      expect(find.text('听书'), findsOneWidget);
+      expect(find.text('听书'), findsWidgets);
       expect(
         find.byWidgetPredicate(
           (w) => w is GlassIconButton && w.label == '关闭听书面板',
         ),
-        findsNothing,
+        findsOneWidget,
       );
       await captureReview(tester, boundary, 'embedded-listening');
-      await tester.tap(control('关闭阅读设置'));
+      await tester.tap(control('关闭听书面板'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('dock-tab-1')));
+      await tester.tap(find.text('目录'));
       await tester.pumpAndSettle();
       expect(find.byType(ReaderCatalogue), findsOneWidget);
       expect(find.byType(DetailPage), findsNothing);
@@ -366,7 +368,9 @@ void main() {
     },
   );
 
-  testWidgets('short notices auto-dismiss in about one second', (tester) async {
+  testWidgets('short notices auto-dismiss after two and a half seconds', (
+    tester,
+  ) async {
     phone(tester);
     await tester.pumpWidget(
       app(
@@ -381,7 +385,7 @@ void main() {
     await tester.tap(find.text('提示'));
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('已保存'), findsOneWidget);
-    await tester.pump(const Duration(milliseconds: 1000));
+    await tester.pump(const Duration(milliseconds: 2600));
     await tester.pumpAndSettle();
     expect(find.text('已保存'), findsNothing);
   });

@@ -104,15 +104,16 @@ class FeatureEntry extends StatelessWidget {
     required this.icon,
     required this.onTap,
     this.subtitle,
+    this.grouped = false,
   });
   final String title;
   final String? subtitle;
   final IconData icon;
   final VoidCallback? onTap;
+  final bool grouped;
   @override
-  Widget build(BuildContext context) => ContentPanel(
-    onTap: onTap,
-    child: Row(
+  Widget build(BuildContext context) {
+    final row = Row(
       children: [
         ArchiveIcon(icon, size: 21),
         const SizedBox(width: 12),
@@ -140,8 +141,18 @@ class FeatureEntry extends StatelessWidget {
         const SizedBox(width: 8),
         const ArchiveIcon(CupertinoIcons.chevron_right, size: 14),
       ],
-    ),
-  );
+    );
+    if (grouped) {
+      return JellyTapSurface(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: row,
+        ),
+      );
+    }
+    return ContentPanel(onTap: onTap, child: row);
+  }
 }
 
 class FeatureError extends StatelessWidget {

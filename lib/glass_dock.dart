@@ -52,7 +52,7 @@ class GlassDock extends StatefulWidget {
       GlassDockItem(CupertinoIcons.book, '书架', symbol: ArchiveSymbol.shelf),
       GlassDockItem(CupertinoIcons.settings, '设置'),
     ],
-  }) : assert(items.length >= 2 && items.length <= 4);
+  }) : assert(items.length >= 2 && items.length <= 5);
 
   final int selectedIndex;
   final ValueChanged<int> onSelected;
@@ -494,59 +494,79 @@ class _GlassDockState extends State<GlassDock> with TickerProviderStateMixin {
         child: ExcludeSemantics(
           child: SizedBox(
             height: 48,
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ArchiveIconContact(
-                    pressed:
-                        _pointer != null &&
-                        index >= 0 &&
-                        item.enabled &&
-                        _fingerPosition(_lastX).round() == index,
-                    activation: _iconActivations[item.identity] ?? 0,
-                    child: ArchiveIcon(
-                      item.icon,
-                      symbol: item.symbol,
-                      size: 20,
-                      color: color,
-                      active: widget.selectedIndex == index,
-                      animate:
-                          !widget.reduceMotion &&
-                          !PerformanceScope.reduceMotionOf(context) &&
-                          (widget.animateInactiveIcons ||
-                              widget.selectedIndex == index),
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: AppText(
-                        item.label,
-                        maxLines: 1,
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 11,
-                          fontWeight: widget.selectedIndex == index
-                              ? FontWeight.w700
-                              : FontWeight.w500,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                if (proximity > .04)
+                  Positioned.fill(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 2,
+                        vertical: 3,
+                      ),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: scheme.primary.withValues(
+                            alpha: .09 * proximity,
+                          ),
+                          borderRadius: BorderRadius.circular(18),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 3),
-                  ExcludeSemantics(
-                    child: SizedBox(
-                      width: 12,
-                      height: 1.5,
-                      child: ColoredBox(
-                        color: scheme.onSurface.withValues(alpha: proximity),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ArchiveIconContact(
+                      pressed:
+                          _pointer != null &&
+                          index >= 0 &&
+                          item.enabled &&
+                          _fingerPosition(_lastX).round() == index,
+                      activation: _iconActivations[item.identity] ?? 0,
+                      child: ArchiveIcon(
+                        item.icon,
+                        symbol: item.symbol,
+                        size: 20,
+                        color: color,
+                        active: widget.selectedIndex == index,
+                        animate:
+                            !widget.reduceMotion &&
+                            !PerformanceScope.reduceMotionOf(context) &&
+                            (widget.animateInactiveIcons ||
+                                widget.selectedIndex == index),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(height: 3),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: AppText(
+                          item.label,
+                          maxLines: 1,
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 12,
+                            fontWeight: widget.selectedIndex == index
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    ExcludeSemantics(
+                      child: SizedBox(
+                        width: 16,
+                        height: 2,
+                        child: ColoredBox(
+                          color: scheme.primary.withValues(alpha: proximity),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),

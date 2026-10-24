@@ -167,6 +167,7 @@ class ReaderTools extends StatefulWidget {
     required this.onLineHeight,
     required this.onReset,
     this.initialBookmarks = false,
+    this.bookmarksOnly = false,
     this.onFontPreview,
     this.onLineHeightPreview,
     this.onPreviewChanged,
@@ -188,6 +189,7 @@ class ReaderTools extends StatefulWidget {
   final VoidCallback onReset;
   final VoidCallback? onIllustrations;
   final bool initialBookmarks;
+  final bool bookmarksOnly;
   final WidgetBuilder? listeningBuilder;
   final String? initialTab;
   final ValueChanged<double>? onFontPreview, onLineHeightPreview;
@@ -228,8 +230,12 @@ class _ReaderToolsState extends State<ReaderTools> {
   bool _backgroundExpanded = false, _backgroundBusy = false;
   late Future<List<String>> _backgrounds = widget.state.backgrounds.list();
   final _backgroundFiles = <String, Future<File?>>{};
-  late String _tab =
-      widget.initialTab ?? (widget.initialBookmarks ? 'bookmarks' : 'layout');
+  late String _tab = switch (widget.initialTab) {
+    'appearance' => 'appearance',
+    'paging' || 'behavior' => 'paging',
+    'display' => 'display',
+    _ => widget.initialBookmarks ? 'layout' : 'layout',
+  };
   bool _adding = false;
   bool _added = false;
   String? _addedId;
@@ -650,88 +656,92 @@ class _ReaderToolsState extends State<ReaderTools> {
   }
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      // In landscape/keyboard + large text, scrolling only the body can leave a
-      // zero-height viewport below the title/tabs. Let the entire panel scroll.
-      final compact = constraints.maxHeight < 260;
-      Widget body() {
-        if (_tab == 'bookmarks') return _bookmarks(context);
-        if (_tab == 'listening' && widget.listeningBuilder != null) {
-          return widget.listeningBuilder!(context);
+  Widget build(BuildContext context) {
+    if (widget.bookmarksOnly) return _bookmarks(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // In landscape/keyboard + large text, scrolling only the body can leave a
+        // zero-height viewport below the title/tabs. Let the entire panel scroll.
+        final compact = constraints.maxHeight < 260;
+        Widget body() {
+          final content = switch (_tab) {
+            'appearance' => _appearance(context),
+            'paging' => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [_paging(context), _behavior(context, turn: true)],
+            ),
+            'display' => _behavior(context),
+            _ => _layout(context),
+          };
+          return compact
+              ? content
+              : SingleChildScrollView(
+                  key: const ValueKey('reader-settings-scroll'),
+                  primary: false,
+                  child: content,
+                );
         }
-        final content = _tab == 'layout'
-            ? _layout(context)
-            : _behavior(context);
-        return compact
-            ? content
-            : SingleChildScrollView(
-                key: const ValueKey('reader-settings-scroll'),
-                primary: false,
-                child: content,
-              );
-      }
 
-      final contents = Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _adjustment(
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 14, 8),
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: AppText(
-                      '阅读设置',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+        final contents = Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _adjustment(
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 14, 8),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: AppText(
+                        '阅读设置',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                  GlassIconButton(
-                    icon: CupertinoIcons.xmark,
-                    label: '关闭阅读设置',
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
+                    GlassIconButton(
+                      icon: CupertinoIcons.xmark,
+                      label: '关闭阅读设置',
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          _adjustment(
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-              child: AppControls.segments<String>(
-                context,
-                groupValue: _tab,
-                children: {
-                  'layout': const AppText('排版'),
-                  'behavior': const AppText('操作'),
-                  'bookmarks': const AppText('书签'),
-                  if (widget.listeningBuilder != null)
-                    'listening': const AppText('听书'),
-                },
-                onValueChanged: (tab) {
-                  if (tab != null) setState(() => _tab = tab);
-                },
+            _adjustment(
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                child: AppControls.segments<String>(
+                  context,
+                  groupValue: _tab,
+                  children: const {
+                    'appearance': AppText('外观'),
+                    'layout': AppText('排版'),
+                    'paging': AppText('翻页'),
+                    'display': AppText('显示'),
+                  },
+                  onValueChanged: (tab) {
+                    if (tab != null) setState(() => _tab = tab);
+                  },
+                ),
               ),
             ),
-          ),
-          if (compact) body() else Flexible(child: body()),
-        ],
-      );
-      return compact
-          ? SingleChildScrollView(
-              key: const ValueKey('reader-settings-scroll'),
-              primary: false,
-              child: contents,
-            )
-          : contents;
-    },
-  );
+            if (compact) body() else Flexible(child: body()),
+          ],
+        );
+        return compact
+            ? SingleChildScrollView(
+                key: const ValueKey('reader-settings-scroll'),
+                primary: false,
+                child: contents,
+              )
+            : contents;
+      },
+    );
+  }
 
-  Widget _layout(BuildContext context) => Padding(
+  Widget _appearance(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
     child: AnimatedBuilder(
       animation: widget.state.readerSettingsChanges,
@@ -740,20 +750,63 @@ class _ReaderToolsState extends State<ReaderTools> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _adjustment(
-            GlassChoiceGroup<String>(
-              enabled: !_changingScope,
-              name: 'reader-style-scope',
-              label: '排版范围',
-              value: widget.state.independentReaderStyle(widget.novel.id)
-                  ? 'book'
-                  : 'shared',
-              options: const {'shared': '通用', 'book': '本书'},
-              optionName: (value) => value,
-              labelSize: 14,
-              optionSize: 12,
-              onChanged: (value) => _changeStyleScope(value == 'book'),
+            ReaderChoicePicker<ReaderPaper>(
+              name: 'reader-paper',
+              label: '阅读配色',
+              value: _readerPreferences.paper,
+              options: {
+                for (final paper in ReaderPaper.values) paper: paper.label,
+              },
+              onChanged: (paper) =>
+                  _preferences(_readerPreferences.copyWith(paper: paper)),
             ),
           ),
+          ..._backgroundOptions(),
+          AnimatedOptionSection(
+            expanded: _readerPreferences.darkPaper(
+              Theme.of(context).brightness == Brightness.dark,
+            ),
+            child: _adjustment(
+              ReaderValueSlider(
+                sliderKey: const ValueKey('reader-night-text-brightness'),
+                label: '夜读文字亮度',
+                value: _readerPreferences.nightTextBrightness,
+                min: .35,
+                max: 1,
+                format: (v) => '${(v * 100).round()}%',
+                onPreview: (v) => _preferences(
+                  _readerPreferences.copyWith(nightTextBrightness: v),
+                  persist: false,
+                ),
+                onCommitted: (v) => _preferences(
+                  _readerPreferences.copyWith(nightTextBrightness: v),
+                ),
+                onInteractionChanged: (v) =>
+                    _preview(const ValueKey('reader-night-text-brightness'), v),
+              ),
+              const ValueKey('reader-night-text-brightness'),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _adjustment(
+            LanguageSettingMenu(
+              key: const ValueKey('reader-language'),
+              state: widget.state,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _paging(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+    child: AnimatedBuilder(
+      animation: widget.state.readerSettingsChanges,
+      builder: (context, _) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
           _adjustment(
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -807,21 +860,38 @@ class _ReaderToolsState extends State<ReaderTools> {
                     ),
                   ),
                 ),
-                ReaderChoicePicker<ReaderPaper>(
-                  name: 'reader-paper',
-                  label: '阅读配色',
-                  value: _readerPreferences.paper,
-                  options: {
-                    for (final paper in ReaderPaper.values) paper: paper.label,
-                  },
-                  onChanged: (paper) =>
-                      _preferences(_readerPreferences.copyWith(paper: paper)),
-                ),
               ],
             ),
           ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _layout(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+    child: AnimatedBuilder(
+      animation: widget.state.readerSettingsChanges,
+      builder: (context, _) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _adjustment(
+            GlassChoiceGroup<String>(
+              enabled: !_changingScope,
+              name: 'reader-style-scope',
+              label: '排版范围',
+              value: widget.state.independentReaderStyle(widget.novel.id)
+                  ? 'book'
+                  : 'shared',
+              options: const {'shared': '通用', 'book': '本书'},
+              optionName: (value) => value,
+              labelSize: 14,
+              optionSize: 12,
+              onChanged: (value) => _changeStyleScope(value == 'book'),
+            ),
+          ),
           if (widget.languages.length > 1) _adjustment(_languageOptions()),
-          ..._backgroundOptions(),
           _adjustment(
             GlassTextButton(
               key: const ValueKey('reader-font-choice'),
@@ -854,43 +924,11 @@ class _ReaderToolsState extends State<ReaderTools> {
               ),
             ),
           ),
-          AnimatedOptionSection(
-            expanded: _readerPreferences.darkPaper(
-              Theme.of(context).brightness == Brightness.dark,
-            ),
-            child: _adjustment(
-              ReaderValueSlider(
-                sliderKey: const ValueKey('reader-night-text-brightness'),
-                label: '夜读文字亮度',
-                value: _readerPreferences.nightTextBrightness,
-                min: .35,
-                max: 1,
-                format: (v) => '${(v * 100).round()}%',
-                onPreview: (v) => _preferences(
-                  _readerPreferences.copyWith(nightTextBrightness: v),
-                  persist: false,
-                ),
-                onCommitted: (v) => _preferences(
-                  _readerPreferences.copyWith(nightTextBrightness: v),
-                ),
-                onInteractionChanged: (v) =>
-                    _preview(const ValueKey('reader-night-text-brightness'), v),
-              ),
-              const ValueKey('reader-night-text-brightness'),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _adjustment(
-            LanguageSettingMenu(
-              key: const ValueKey('reader-language'),
-              state: widget.state,
-            ),
-          ),
-          const SizedBox(height: 12),
           _adjustment(
             ReaderValueSlider(
               sliderKey: const ValueKey('reader-font-slider'),
               label: '字体大小',
+              stepper: true,
               value: _fontSize,
               min: minimumReaderFontSize,
               max: maximumReaderFontSize,
@@ -1249,7 +1287,10 @@ class _ReaderToolsState extends State<ReaderTools> {
     ],
   );
 
-  Widget _behavior(BuildContext context) => AnimatedBuilder(
+  Widget _behavior(
+    BuildContext context, {
+    bool turn = false,
+  }) => AnimatedBuilder(
     animation: widget.state.readerSettingsChanges,
     builder: (context, _) {
       final prefs = _readerPreferences;
@@ -1259,267 +1300,289 @@ class _ReaderToolsState extends State<ReaderTools> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _adjustment(
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _switch(
-                    context,
-                    '隐藏系统状态栏',
-                    prefs.hideSystemStatus,
-                    (v) => _preferences(prefs.copyWith(hideSystemStatus: v)),
-                  ),
-                  const AppText(
-                    '时间与电量保留在原状态栏位置',
-                    style: TextStyle(fontSize: 12, height: 1.6),
-                  ),
-                  FutureBuilder<bool>(
-                    future: _floatingNavigation,
-                    builder: (context, value) => value.data != true
-                        ? const SizedBox.shrink()
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const SizedBox(height: 8),
-                              const AppText(
-                                '系统悬浮球需在「系统和更新 → 系统导航方式 → 悬浮导航」中关闭。',
-                                style: TextStyle(fontSize: 12, height: 1.6),
-                              ),
-                              GlassTextButton(
-                                onPressed: () async {
-                                  try {
-                                    await _systemControls.invokeMethod<void>(
-                                      'navigationSettings',
-                                    );
-                                  } catch (_) {
-                                    if (context.mounted) {
-                                      showNovelFeedback(
-                                        context,
-                                        '请在手机设置中搜索「悬浮导航」',
+            if (!turn)
+              _adjustment(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _switch(
+                      context,
+                      '隐藏系统状态栏',
+                      prefs.hideSystemStatus,
+                      (v) => _preferences(prefs.copyWith(hideSystemStatus: v)),
+                    ),
+                    const AppText(
+                      '时间与电量保留在原状态栏位置',
+                      style: TextStyle(fontSize: 12, height: 1.6),
+                    ),
+                    FutureBuilder<bool>(
+                      future: _floatingNavigation,
+                      builder: (context, value) => value.data != true
+                          ? const SizedBox.shrink()
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                const SizedBox(height: 8),
+                                const AppText(
+                                  '系统悬浮球需在「系统和更新 → 系统导航方式 → 悬浮导航」中关闭。',
+                                  style: TextStyle(fontSize: 12, height: 1.6),
+                                ),
+                                GlassTextButton(
+                                  onPressed: () async {
+                                    try {
+                                      await _systemControls.invokeMethod<void>(
+                                        'navigationSettings',
                                       );
+                                    } catch (_) {
+                                      if (context.mounted) {
+                                        showNovelFeedback(
+                                          context,
+                                          '请在手机设置中搜索「悬浮导航」',
+                                        );
+                                      }
                                     }
-                                  }
-                                },
-                                child: const AppText('打开系统设置'),
-                              ),
-                            ],
-                          ),
-                  ),
-                ],
-              ),
-            ),
-            AnimatedOptionSection(
-              expanded: prefs.hideSystemStatus,
-              child: _adjustment(
-                ReaderValueSlider(
-                  sliderKey: const ValueKey('reader-status-inset'),
-                  label: '时间与电量留边',
-                  value: prefs.statusSideInset,
-                  min: 0,
-                  max: 96,
-                  divisions: 48,
-                  format: (v) => v == 0 ? '自动' : '+${v.round()}',
-                  onPreview: (v) => _preferences(
-                    prefs.copyWith(statusSideInset: v),
-                    persist: false,
-                  ),
-                  onCommitted: (v) =>
-                      _preferences(prefs.copyWith(statusSideInset: v)),
-                  onInteractionChanged: (v) =>
-                      _preview(const ValueKey('reader-status-inset'), v),
+                                  },
+                                  child: const AppText('打开系统设置'),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ],
                 ),
-                const ValueKey('reader-status-inset'),
               ),
-            ),
-            _adjustment(
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (LocalPlatform.android)
-                    AnimatedBuilder(
-                      animation: widget.state.readerBehaviorChanges,
-                      builder: (context, _) => Row(
+            if (!turn)
+              AnimatedOptionSection(
+                expanded: prefs.hideSystemStatus,
+                child: _adjustment(
+                  ReaderValueSlider(
+                    sliderKey: const ValueKey('reader-status-inset'),
+                    label: '时间与电量留边',
+                    value: prefs.statusSideInset,
+                    min: 0,
+                    max: 96,
+                    divisions: 48,
+                    format: (v) => v == 0 ? '自动' : '+${v.round()}',
+                    onPreview: (v) => _preferences(
+                      prefs.copyWith(statusSideInset: v),
+                      persist: false,
+                    ),
+                    onCommitted: (v) =>
+                        _preferences(prefs.copyWith(statusSideInset: v)),
+                    onInteractionChanged: (v) =>
+                        _preview(const ValueKey('reader-status-inset'), v),
+                  ),
+                  const ValueKey('reader-status-inset'),
+                ),
+              ),
+            if (!turn)
+              _adjustment(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (LocalPlatform.android)
+                      AnimatedBuilder(
+                        animation: widget.state.readerBehaviorChanges,
+                        builder: (context, _) => Row(
+                          children: [
+                            const Expanded(child: AppText('阅读时保持亮屏')),
+                            AppControls.toggle(
+                              context,
+                              key: const ValueKey('reader-keep-screen-on'),
+                              value: widget.state.keepScreenOn,
+                              onChanged: (value) async {
+                                try {
+                                  await widget.state.setKeepScreenOn(value);
+                                } catch (_) {
+                                  if (context.mounted) {
+                                    showNovelFeedback(context, '亮屏设置保存失败，请重试');
+                                  }
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    GlassTextButton(
+                      onPressed: () =>
+                          Navigator.pop(context, const ReaderEnterFocus()),
+                      child: const AppText('专注阅读 · 隐藏控件'),
+                    ),
+                    Row(
+                      children: [
+                        const Expanded(child: AppText('控件显隐时正文重排')),
+                        AppControls.toggle(
+                          context,
+                          key: const ValueKey('reader-reflow-on-chrome'),
+                          value: prefs.reflowOnChrome,
+                          onChanged: (value) => _preferences(
+                            prefs.copyWith(reflowOnChrome: value),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const AppText(
+                      '开启时正文为控件留出空间；关闭时控件覆盖正文。',
+                      style: TextStyle(fontSize: 12, height: 1.6),
+                    ),
+                  ],
+                ),
+              ),
+            if (turn)
+              _adjustment(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        const Expanded(child: AppText('章节入场动画')),
+                        AppControls.toggle(
+                          context,
+                          key: const ValueKey('reader-chapter-entrance'),
+                          value: prefs.chapterEntrance,
+                          onChanged: (value) => _preferences(
+                            prefs.copyWith(chapterEntrance: value),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const AppText(
+                      '只控制打开章节时的额外入场；跨章仍沿用翻页效果。',
+                      style: TextStyle(fontSize: 12, height: 1.6),
+                    ),
+                    _switch(
+                      context,
+                      '分区点按翻页',
+                      prefs.tapPaging,
+                      (v) => _preferences(prefs.copyWith(tapPaging: v)),
+                    ),
+                    AppText(
+                      prefs.tapPaging && prefs.tapBothSidesNext
+                          ? '左右两侧前进，中间显示控件；滑动翻页不变。'
+                          : '常规布局点按中间显示控件；竖排左右翻页方向相反。',
+                      style: const TextStyle(fontSize: 12, height: 1.6),
+                    ),
+                    AnimatedOptionSection(
+                      expanded: prefs.tapPaging,
+                      child: Row(
                         children: [
-                          const Expanded(child: AppText('阅读时保持亮屏')),
+                          const Expanded(child: AppText('左右点按均为下一页')),
                           AppControls.toggle(
                             context,
-                            key: const ValueKey('reader-keep-screen-on'),
-                            value: widget.state.keepScreenOn,
-                            onChanged: (value) async {
-                              try {
-                                await widget.state.setKeepScreenOn(value);
-                              } catch (_) {
-                                if (context.mounted) {
-                                  showNovelFeedback(context, '亮屏设置保存失败，请重试');
-                                }
-                              }
-                            },
+                            key: const ValueKey('reader-tap-both-sides-next'),
+                            value: prefs.tapBothSidesNext,
+                            onChanged: (value) => _preferences(
+                              prefs.copyWith(tapBothSidesNext: value),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  GlassTextButton(
-                    onPressed: () =>
-                        Navigator.pop(context, const ReaderEnterFocus()),
-                    child: const AppText('专注阅读 · 隐藏控件'),
-                  ),
-                  Row(
-                    children: [
-                      const Expanded(child: AppText('控件显隐时正文重排')),
-                      AppControls.toggle(
-                        context,
-                        key: const ValueKey('reader-reflow-on-chrome'),
-                        value: prefs.reflowOnChrome,
-                        onChanged: (value) =>
-                            _preferences(prefs.copyWith(reflowOnChrome: value)),
-                      ),
-                    ],
-                  ),
-                  const AppText(
-                    '开启时正文为控件留出空间；关闭时控件覆盖正文。',
-                    style: TextStyle(fontSize: 12, height: 1.6),
-                  ),
-                  const Divider(height: 24),
-                  Row(
-                    children: [
-                      const Expanded(child: AppText('章节入场动画')),
-                      AppControls.toggle(
-                        context,
-                        key: const ValueKey('reader-chapter-entrance'),
-                        value: prefs.chapterEntrance,
-                        onChanged: (value) => _preferences(
-                          prefs.copyWith(chapterEntrance: value),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const AppText(
-                    '只控制打开章节时的额外入场；跨章仍沿用翻页效果。',
-                    style: TextStyle(fontSize: 12, height: 1.6),
-                  ),
-                  _switch(
-                    context,
-                    '分区点按翻页',
-                    prefs.tapPaging,
-                    (v) => _preferences(prefs.copyWith(tapPaging: v)),
-                  ),
-                  AppText(
-                    prefs.tapPaging && prefs.tapBothSidesNext
-                        ? '左右两侧前进，中间显示控件；滑动翻页不变。'
-                        : '常规布局点按中间显示控件；竖排左右翻页方向相反。',
-                    style: const TextStyle(fontSize: 12, height: 1.6),
-                  ),
-                  AnimatedOptionSection(
-                    expanded: prefs.tapPaging,
-                    child: Row(
-                      children: [
-                        const Expanded(child: AppText('左右点按均为下一页')),
-                        AppControls.toggle(
-                          context,
-                          key: const ValueKey('reader-tap-both-sides-next'),
-                          value: prefs.tapBothSidesNext,
-                          onChanged: (value) => _preferences(
-                            prefs.copyWith(tapBothSidesNext: value),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  AnimatedOptionSection(
-                    expanded: prefs.tapPaging && !prefs.tapBothSidesNext,
-                    child: Wrap(
-                      spacing: 8,
-                      children: [
-                        for (final layout in ReaderTapLayout.values)
-                          Semantics(
-                            selected: prefs.tapLayout == layout,
-                            child: GlassTextButton(
-                              key: ValueKey('reader-tap-layout-${layout.name}'),
-                              compact: true,
+                    AnimatedOptionSection(
+                      expanded: prefs.tapPaging && !prefs.tapBothSidesNext,
+                      child: Wrap(
+                        spacing: 8,
+                        children: [
+                          for (final layout in ReaderTapLayout.values)
+                            Semantics(
                               selected: prefs.tapLayout == layout,
-                              onPressed: () => _preferences(
-                                prefs.copyWith(tapLayout: layout),
-                              ),
-                              child: AppText(
-                                layout.label,
-                                style: const TextStyle(fontSize: 12),
+                              child: GlassTextButton(
+                                key: ValueKey(
+                                  'reader-tap-layout-${layout.name}',
+                                ),
+                                compact: true,
+                                selected: prefs.tapLayout == layout,
+                                onPressed: () => _preferences(
+                                  prefs.copyWith(tapLayout: layout),
+                                ),
+                                child: AppText(
+                                  layout.label,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  AnimatedOptionSection(
-                    expanded:
-                        prefs.tapPaging &&
-                        !prefs.tapBothSidesNext &&
-                        prefs.tapLayout != ReaderTapLayout.standard,
-                    child: AppText(
-                      '${prefs.tapLayout == ReaderTapLayout.rightHand ? '右' : '左'}半屏上部回退、下部前进，另一侧显示控件。',
-                      style: const TextStyle(fontSize: 12, height: 1.6),
-                    ),
-                  ),
-                  if (LocalPlatform.android)
-                    _switch(
-                      context,
-                      '音量键翻页',
-                      prefs.volumePaging,
-                      (v) => _preferences(prefs.copyWith(volumePaging: v)),
-                    ),
-                  const Divider(height: 24),
-                  ReaderValueSlider(
-                    sliderKey: const ValueKey('reader-auto-scroll-speed'),
-                    label: prefs.mode.paginated ? '自动翻页间隔' : '自动滚动速度',
-                    value: prefs.mode.paginated
-                        ? 600 / prefs.autoScrollSpeed
-                        : prefs.autoScrollSpeed,
-                    min: prefs.mode.paginated ? 7.5 : 8,
-                    max: prefs.mode.paginated ? 75 : 80,
-                    divisions: 36,
-                    format: (v) => prefs.mode.paginated
-                        ? '${v.round()} 秒'
-                        : '${v.round()} px/s',
-                    onCommitted: (v) => _preferences(
-                      prefs.copyWith(
-                        autoScrollSpeed: prefs.mode.paginated ? 600 / v : v,
+                        ],
                       ),
                     ),
-                  ),
-                  GlassTextButton(
-                    key: const ValueKey('reader-auto-scroll-start'),
-                    onPressed: widget.position == null
-                        ? null
-                        : () => Navigator.pop(
-                            context,
-                            const ReaderStartAutoScroll(),
-                          ),
-                    child: AppText(prefs.mode.paginated ? '开始自动翻页' : '开始自动滚动'),
-                  ),
-                  const AppText(
-                    '点按正文、手动滑动或切到后台即可暂停。',
-                    style: TextStyle(fontSize: 12, height: 1.6),
-                  ),
-                  const Divider(height: 24),
-                  if (LocalPlatform.android)
-                    _switch(
-                      context,
-                      '左边缘滑动调亮度',
-                      prefs.edgeBrightness,
-                      (v) => _preferences(prefs.copyWith(edgeBrightness: v)),
-                    ),
-                  if (LocalPlatform.android)
-                    _switch(
-                      context,
-                      '亮度跟随系统',
-                      prefs.brightness == null,
-                      (v) => _preferences(
-                        prefs.copyWith(brightness: .7, systemBrightness: v),
+                    AnimatedOptionSection(
+                      expanded:
+                          prefs.tapPaging &&
+                          !prefs.tapBothSidesNext &&
+                          prefs.tapLayout != ReaderTapLayout.standard,
+                      child: AppText(
+                        '${prefs.tapLayout == ReaderTapLayout.rightHand ? '右' : '左'}半屏上部回退、下部前进，另一侧显示控件。',
+                        style: const TextStyle(fontSize: 12, height: 1.6),
                       ),
                     ),
-                ],
+                    if (LocalPlatform.android)
+                      _switch(
+                        context,
+                        '音量键翻页',
+                        prefs.volumePaging,
+                        (v) => _preferences(prefs.copyWith(volumePaging: v)),
+                      ),
+                    const Divider(height: 24),
+                    ReaderValueSlider(
+                      sliderKey: const ValueKey('reader-auto-scroll-speed'),
+                      label: prefs.mode.paginated ? '自动翻页间隔' : '自动滚动速度',
+                      value: prefs.mode.paginated
+                          ? 600 / prefs.autoScrollSpeed
+                          : prefs.autoScrollSpeed,
+                      min: prefs.mode.paginated ? 7.5 : 8,
+                      max: prefs.mode.paginated ? 75 : 80,
+                      divisions: 36,
+                      format: (v) => prefs.mode.paginated
+                          ? '${v.round()} 秒'
+                          : '${v.round()} px/s',
+                      onCommitted: (v) => _preferences(
+                        prefs.copyWith(
+                          autoScrollSpeed: prefs.mode.paginated ? 600 / v : v,
+                        ),
+                      ),
+                    ),
+                    GlassTextButton(
+                      key: const ValueKey('reader-auto-scroll-start'),
+                      onPressed: widget.position == null
+                          ? null
+                          : () => Navigator.pop(
+                              context,
+                              const ReaderStartAutoScroll(),
+                            ),
+                      child: AppText(
+                        prefs.mode.paginated ? '开始自动翻页' : '开始自动滚动',
+                      ),
+                    ),
+                    const AppText(
+                      '点按正文、手动滑动或切到后台即可暂停。',
+                      style: TextStyle(fontSize: 12, height: 1.6),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            if (LocalPlatform.android)
+            if (!turn)
+              _adjustment(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (LocalPlatform.android)
+                      _switch(
+                        context,
+                        '左边缘滑动调亮度',
+                        prefs.edgeBrightness,
+                        (v) => _preferences(prefs.copyWith(edgeBrightness: v)),
+                      ),
+                    if (LocalPlatform.android)
+                      _switch(
+                        context,
+                        '亮度跟随系统',
+                        prefs.brightness == null,
+                        (v) => _preferences(
+                          prefs.copyWith(brightness: .7, systemBrightness: v),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            if (!turn && LocalPlatform.android)
               AnimatedOptionSection(
                 expanded: prefs.brightness != null,
                 child: _adjustment(
@@ -1627,6 +1690,7 @@ class ReaderValueSlider extends StatefulWidget {
     this.onPreview,
     this.onInteractionChanged,
     this.hapticSteps,
+    this.stepper = false,
   });
   final Key sliderKey;
   final String label;
@@ -1639,6 +1703,7 @@ class ReaderValueSlider extends StatefulWidget {
   final ValueChanged<double>? onPreview;
   final ValueChanged<bool>? onInteractionChanged;
   final int? hapticSteps;
+  final bool stepper;
 
   @override
   State<ReaderValueSlider> createState() => _ReaderValueSliderState();
@@ -1730,6 +1795,24 @@ class _ReaderValueSliderState extends State<ReaderValueSlider> {
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
+            if (widget.stepper) ...[
+              const SizedBox(width: 8),
+              GlassTextButton(
+                dense: true,
+                onPressed: widget.onCommitted == null || _draft <= widget.min
+                    ? null
+                    : () => _adjust(-1),
+                child: AppText(widget.label.contains('字体') ? 'A−' : '−'),
+              ),
+              const SizedBox(width: 4),
+              GlassTextButton(
+                dense: true,
+                onPressed: widget.onCommitted == null || _draft >= widget.max
+                    ? null
+                    : () => _adjust(1),
+                child: AppText(widget.label.contains('字体') ? 'A＋' : '＋'),
+              ),
+            ],
           ],
         ),
         const SizedBox(height: 4),

@@ -236,9 +236,7 @@ class _NovelFeedbackNoticeState extends State<NovelFeedbackNotice>
     // actions more reading time, but never require a separate close control.
     final milliseconds =
         widget.duration?.inMilliseconds ??
-        (widget.onAction == null
-            ? (480 + widget.message.runes.length * 28).clamp(900, 2200)
-            : (widget.message.runes.length / 18).ceil().clamp(4, 7) * 1000);
+        (widget.onAction == null ? 2500 : 4000);
     _timer = Timer(
       Duration(
         milliseconds: MediaQuery.accessibleNavigationOf(context)
@@ -284,30 +282,23 @@ class _NovelFeedbackNoticeState extends State<NovelFeedbackNotice>
   Widget _positioned(double visibility) {
     final media = MediaQuery.of(context);
     final headerProgress = NovelMotion.ease.transform(visibility.clamp(0, 1));
-    final top =
-        media.viewPadding.top +
-        FrostedHeader.toolbarHeight * headerProgress +
-        4 +
-        8 * headerProgress;
-    // 54 dp Dock + 12 dp bottom gap + deformation and separation. Long
-    // messages scroll inside the notice rather than reaching into this band.
+    // Sit above the floating Dock (54 + 22) with a 12 dp gap. Reader chrome
+    // reports its own visibility so the notice clears the taller tool bar.
     final bottom = math.max(
       media.viewInsets.bottom + 16,
-      media.viewPadding.bottom + 88,
+      media.viewPadding.bottom + 22 + 54 + 12 + 72 * headerProgress,
     );
     return Positioned(
-      top: top,
+      bottom: bottom,
       left: media.viewPadding.left + 16,
       right: media.viewPadding.right + 16,
       child: Align(
-        alignment: Alignment.topCenter,
+        alignment: Alignment.bottomCenter,
         child: ConstrainedBox(
           constraints: BoxConstraints(
             maxWidth: 560,
-            maxHeight: (media.size.height - top - bottom).clamp(
-              0,
-              double.infinity,
-            ),
+            maxHeight: (media.size.height - bottom - media.viewPadding.top)
+                .clamp(0, double.infinity),
           ),
           child: AnimatedBuilder(
             animation: _motion,
@@ -342,6 +333,8 @@ class _NovelFeedbackNoticeState extends State<NovelFeedbackNotice>
                       Padding(
                         padding: const EdgeInsets.only(left: 8),
                         child: GlassTextButton(
+                          dense: true,
+                          filled: true,
                           onPressed: widget.onAction,
                           child: AppText(widget.actionLabel!),
                         ),
@@ -356,10 +349,10 @@ class _NovelFeedbackNoticeState extends State<NovelFeedbackNotice>
               // in a fractional-opacity layer.
               return ClipRect(
                 child: Align(
-                  alignment: Alignment.topCenter,
+                  alignment: Alignment.bottomCenter,
                   heightFactor: value,
                   child: Transform.translate(
-                    offset: Offset(0, -12 * (1 - value)),
+                    offset: Offset(0, 12 * (1 - value)),
                     child: child,
                   ),
                 ),

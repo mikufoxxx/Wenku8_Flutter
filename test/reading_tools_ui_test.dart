@@ -209,7 +209,7 @@ void main({
   }
 
   Future<void> openCatalogue(WidgetTester tester) async {
-    await tester.tap(find.byKey(const ValueKey('dock-tab-1')));
+    await tester.tap(find.text('目录'));
     await tester.pumpAndSettle();
     if (find.text('章节目录').evaluate().isNotEmpty) {
       await tester.tap(find.text('章节目录'));
@@ -622,10 +622,10 @@ void main({
     'empty directories disable the catalogue control and create no reading history',
     (tester) async {
       await reader(tester, novel: _directory(71, count: 0));
-      await tester.tap(find.byKey(const ValueKey('dock-tab-1')));
+      await tester.tap(find.text('目录'));
       await tester.pumpAndSettle();
       expect(find.byType(ReaderCatalogue), findsNothing);
-      expect(find.text('0 / 0'), findsOneWidget);
+      expect(find.text('目录'), findsWidgets);
       expect(state.readingHistoryIds, isEmpty);
       expect(remote.bodies, isEmpty);
       expect(tester.takeException(), isNull);

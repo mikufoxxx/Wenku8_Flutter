@@ -29,6 +29,7 @@ class ReaderCatalogue extends StatefulWidget {
     this.onProgressCommitted,
     this.onPreviewChanged,
     this.canHandoff = false,
+    this.bookmarks,
   });
   final Novel novel;
   final int currentChapter;
@@ -37,6 +38,7 @@ class ReaderCatalogue extends StatefulWidget {
   final ValueChanged<double>? onProgressPreview, onProgressCommitted;
   final ValueChanged<bool>? onPreviewChanged;
   final bool canHandoff;
+  final Widget? bookmarks;
 
   @override
   State<ReaderCatalogue> createState() => _ReaderCatalogueState();
@@ -168,9 +170,10 @@ class _ReaderCatalogueState extends State<ReaderCatalogue> {
             child: AppControls.segments<String>(
               context,
               groupValue: _tab,
-              children: const {
-                'progress': AppText('章节进度'),
-                'chapters': AppText('章节目录'),
+              children: {
+                'progress': const AppText('章节进度'),
+                'chapters': const AppText('章节目录'),
+                if (widget.bookmarks != null) 'bookmarks': const AppText('书签'),
               },
               onValueChanged: (value) {
                 if (value != null) setState(() => _tab = value);
@@ -180,7 +183,9 @@ class _ReaderCatalogueState extends State<ReaderCatalogue> {
         ],
         const SizedBox(height: 10),
         Expanded(
-          child: _tab == 'progress'
+          child: _tab == 'bookmarks' && widget.bookmarks != null
+              ? widget.bookmarks!
+              : _tab == 'progress'
               ? SingleChildScrollView(
                   primary: false,
                   child: Column(

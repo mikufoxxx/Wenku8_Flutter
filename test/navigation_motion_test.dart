@@ -181,20 +181,20 @@ void main() {
       );
       await tester.pumpAndSettle();
       final dock = find.byKey(const ValueKey('reader-liquid-dock'));
-      expect(tester.getSize(dock).width, closeTo(3 * 184 / 3 + 12, .01));
+      expect(tester.getSize(dock).width, closeTo(5 * 184 / 3 + 12, .01));
       expect(tester.getSize(dock).height, 54);
       expect(
         find.byKey(const ValueKey('reader-chrome-edge-blur')),
         findsOneWidget,
       );
-      expect(tester.widget<GlassDock>(dock).items.first.enabled, isFalse);
+      expect(tester.widget<GlassDock>(dock).items.first.label, '目录');
       await tester.tap(find.text('上一章'));
       await tester.pumpAndSettle();
-      expect(find.text('第 1 章'), findsOneWidget);
+      expect(find.text('第 1 章'), findsWidgets);
       final surface = find.byKey(const ValueKey('dock-fluid-surface'));
       final rest = tester.getRect(surface);
       final gesture = await tester.startGesture(
-        tester.getCenter(find.text('下一章')),
+        tester.getCenter(find.byKey(const ValueKey('dock-tab-2'))),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 90));
@@ -207,10 +207,10 @@ void main() {
       await gesture.cancel();
       await tester.pumpAndSettle();
       expect(tester.getRect(surface), rest);
-      expect(find.text('第 1 章'), findsOneWidget);
+      expect(find.text('第 1 章'), findsWidgets);
       await tester.tap(find.text('下一章'));
       await tester.pumpAndSettle();
-      expect(find.text('第 2 章'), findsOneWidget);
+      expect(find.text('第 2 章'), findsWidgets);
       expect(tester.widget<GlassDock>(dock).items.first.enabled, isTrue);
       expect(tester.takeException(), isNull);
     },

@@ -145,13 +145,16 @@ void main({
     await tester.pumpAndSettle();
   }
 
-  Future<void> settings(WidgetTester tester, {bool bookmarks = false}) async {
-    await tester.tap(_control('阅读设置'));
-    await tester.pumpAndSettle();
+  Future<void> settings(
+    WidgetTester tester, {
+    bool bookmarks = false,
+    String tab = '排版',
+  }) async {
     if (bookmarks) {
-      await tester.tap(find.text('书签'));
-      await tester.pumpAndSettle();
+      await openReaderPanel(tester, tab: '书签');
+      return;
     }
+    await openReaderPanel(tester, tab: tab);
   }
 
   Future<void> shot(WidgetTester tester, String name) async {
@@ -176,7 +179,7 @@ void main({
           .widget<ReaderPagedView>(find.byType(ReaderPagedView))
           .controller;
       final generation = controller.debugLayoutGeneration;
-      await settings(tester);
+      await settings(tester, tab: '翻页');
       await tester.ensureVisible(find.text('翻页效果'));
       await tester.pumpAndSettle();
       await captureReview(tester, boundary, 'reader-effects-compact-dark');
@@ -400,7 +403,7 @@ void main({
       expect(mark.position.offset, closeTo(position, 1));
       expect((await LibraryState.load()).bookmarksFor(71).single.id, mark.id);
       await shot(tester, 'reader-tools-bookmarks');
-      await tester.tap(_control('关闭阅读设置'));
+      await tester.tap(_control('关闭目录'));
       await tester.pumpAndSettle();
       _article(tester).position.jumpTo(0);
       await tester.pumpAndSettle();
@@ -445,9 +448,9 @@ void main({
       await tester.tap(find.text('添加当前位置书签'));
       await _io(tester);
       final mark = state.bookmarksFor(71).single;
-      await tester.tap(_control('关闭阅读设置'));
+      await tester.tap(_control('关闭目录'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('dock-tab-2')));
+      await tester.tap(find.text('下一章'));
       await tester.pumpAndSettle();
       expect(
         state.positionFor(71)!.chapterId,
@@ -499,7 +502,7 @@ void main({
       await tester.tap(find.text('添加当前位置书签'));
       await _io(tester);
       final mark = state.bookmarksFor(71).single;
-      await tester.tap(_control('关闭阅读设置'));
+      await tester.tap(_control('关闭目录'));
       await tester.pumpAndSettle();
       await state.setFontSize(27);
       await state.setLineHeight(1.95);
@@ -578,11 +581,11 @@ void main({
       expect(haptics.length, 2);
       clock += const Duration(milliseconds: 75);
       slider.onChanged!(.08);
-      expect(
-        haptics,
-        ['detent', 'detent', 'detent'],
-        reason: 'Accessibility increments are committed interactions too.',
-      );
+      expect(haptics, [
+        'detent',
+        'detent',
+        'detent',
+      ], reason: 'Accessibility increments are committed interactions too.');
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );

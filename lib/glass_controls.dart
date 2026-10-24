@@ -274,6 +274,7 @@ class AppGlassSegments<T extends Object> extends StatelessWidget {
     required this.style,
     required this.pillStyle,
     required this.foregroundColor,
+    this.selectedForegroundColor,
     this.disabledChildren = const {},
     this.haptics = true,
   });
@@ -285,6 +286,7 @@ class AppGlassSegments<T extends Object> extends StatelessWidget {
   final easy.LiquidGlassStyle style;
   final easy.LiquidGlassSegmentedPillStyle pillStyle;
   final Color foregroundColor;
+  final Color? selectedForegroundColor;
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
@@ -294,6 +296,7 @@ class AppGlassSegments<T extends Object> extends StatelessWidget {
           child is Text ? child.data ?? '' : '',
       ];
       final textOnly = children.values.every((child) => child is Text);
+      final selectedColor = selectedForegroundColor ?? foregroundColor;
       final textStyle = DefaultTextStyle.of(
         context,
       ).style.copyWith(fontSize: 14, height: 1.4, color: foregroundColor);
@@ -343,13 +346,26 @@ class AppGlassSegments<T extends Object> extends StatelessWidget {
           style: style,
           pillStyle: pillStyle,
           labelStyle: easy.LiquidGlassSegmentedLabelStyle(
-            selectedColor: foregroundColor,
-            unselectedColor: foregroundColor.withValues(alpha: .72),
+            selectedColor: selectedColor,
+            unselectedColor: foregroundColor,
             fontSize: 14,
+            selectedFontWeight: FontWeight.w700,
           ),
           segmentBuilder: textOnly
               ? null
-              : (context, index, selected, color) => children[keys[index]]!,
+              : (context, index, selected, color) => IconTheme(
+                  data: IconThemeData(
+                    color: selected ? selectedColor : foregroundColor,
+                  ),
+                  child: DefaultTextStyle.merge(
+                    style: TextStyle(
+                      color: selected ? selectedColor : foregroundColor,
+                      fontSize: 14,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                    child: children[keys[index]]!,
+                  ),
+                ),
         ),
       );
     },

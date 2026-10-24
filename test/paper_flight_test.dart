@@ -94,7 +94,7 @@ void main() {
         closeTo(p, .002),
       );
     }
-    expect(NovelMotion.coverFlight.inMilliseconds * .42, 420);
+    expect(NovelMotion.coverFlight.inMilliseconds * .42, closeTo(235.2, .01));
     expect(
       PaperCoverRectTween(
         begin: const Rect.fromLTWH(24, 360, 56, 76),
@@ -153,12 +153,16 @@ void main() {
     final initial = render.debugMeshDraws;
     clock.forward();
     await tester.pump();
+    final slice = Duration(
+      microseconds: NovelMotion.coverFlight.inMicroseconds ~/ 120,
+    );
     for (var i = 0; i < 120; i++) {
-      await tester.pump(const Duration(microseconds: 8334));
+      await tester.pump(slice);
     }
     expect(render.debugMeshDraws - initial, inInclusiveRange(120, 121));
     expect(render.debugChildPaints, 0);
     expect(builds, 1);
+    await tester.pump(NovelMotion.coverFlight);
     expect(clock.value, 1);
     await tester.pumpWidget(const SizedBox.shrink());
     clock.dispose();
@@ -187,7 +191,10 @@ void main() {
       expect(bend.debugMeshDraws, greaterThan(0));
       expect(bend.debugChildPaints, lessThanOrEqualTo(1));
       expect(bend.progress, inExclusiveRange(0, 1));
-      expect(bend.progress, closeTo(.22, .005));
+      expect(
+        bend.progress,
+        closeTo(220 / NovelMotion.coverFlight.inMilliseconds, .02),
+      );
       await tester.pumpAndSettle();
       final landed = find.descendant(
         of: find.byType(DetailPage),

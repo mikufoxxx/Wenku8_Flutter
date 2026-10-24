@@ -9,6 +9,7 @@ import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:flutter/services.dart';
 
 import 'app_ui.dart';
+import 'wk_tokens.dart';
 import 'app_search_field.dart';
 import 'setting_menu.dart';
 import 'cover_images.dart';
@@ -224,6 +225,7 @@ class _HomeShellState extends State<HomeShell> with TickerProviderStateMixin {
       repository: widget.repository,
       showHeader: false,
       onSearch: _openSearch,
+      onOpenShelf: () => _selectTab(1),
     );
     final shelf = ShelfPage(
       books: const [],
@@ -231,6 +233,7 @@ class _HomeShellState extends State<HomeShell> with TickerProviderStateMixin {
       repository: widget.repository,
       showHeader: false,
       onSearch: _openSearch,
+      onDiscover: () => _selectTab(0),
       navigation: _navigation,
     );
     final settings = MyPage(
@@ -833,26 +836,6 @@ class _HomeShellState extends State<HomeShell> with TickerProviderStateMixin {
           },
         ),
       ),
-      GlassMenuAnchor(
-        child: Builder(
-          builder: (anchor) => SizedBox(
-            width: 42,
-            height: 46,
-            child: ArchiveIconButton(
-              key: const ValueKey('search-field-filter'),
-              tooltip: '搜索范围：${_activeSearch.searchField.label}',
-              icon: ArchiveIcon(
-                CupertinoIcons.line_horizontal_3_decrease,
-                size: 19,
-                color: _activeSearch.searchField == BookSearchField.all
-                    ? null
-                    : Theme.of(context).colorScheme.primary,
-              ),
-              onPressed: () => _chooseSearchField(anchor),
-            ),
-          ),
-        ),
-      ),
       SizedBox(
         width: 46,
         height: 46,
@@ -865,30 +848,34 @@ class _HomeShellState extends State<HomeShell> with TickerProviderStateMixin {
       ),
     ],
   );
+}
 
-  Future<void> _chooseSearchField(BuildContext context) async {
-    _dismissSearchKeyboard();
-    final field = await showGlassMenu<BookSearchField>(
-      context: context,
-      reduceMotion: _reduceMotion,
-      builder: (menu) => Column(
-        mainAxisSize: MainAxisSize.min,
+class SearchScopeCapsules extends StatelessWidget {
+  const SearchScopeCapsules({super.key, required this.feed});
+  final NovelFeedController feed;
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: feed,
+    builder: (context, _) => Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Wrap(
+        key: const ValueKey('search-field-filter'),
+        spacing: 8,
+        runSpacing: 4,
         children: [
-          for (final (index, field) in BookSearchField.values.indexed)
-            GlassMenuItem(
-              order: index,
-              label: field.label,
-              selected: _activeSearch.searchField == field,
-              onPressed: () => Navigator.pop(menu, field),
+          for (final field in BookSearchField.values)
+            GlassTextButton(
+              key: ValueKey('search-field-${field.name}'),
+              dense: true,
+              selected: feed.searchField == field,
+              onPressed: () => feed.selectSearchField(field),
+              child: AppText(field.label),
             ),
         ],
       ),
-    );
-    if (field == null || !mounted) return;
-    final pending = _activeSearch.selectSearchField(field);
-    setState(() {});
-    await pending;
-  }
+    ),
+  );
 }
 
 class DiscoverPage extends StatelessWidget {
@@ -902,6 +889,7 @@ class DiscoverPage extends StatelessWidget {
     this.feed,
     this.categoryTitle,
     this.onChooseCategory,
+    this.onOpenShelf,
   });
   final List<Novel> books;
   final LibraryState state;
@@ -911,6 +899,7 @@ class DiscoverPage extends StatelessWidget {
   final NovelFeedController? feed;
   final String? categoryTitle;
   final void Function(BuildContext context)? onChooseCategory;
+  final VoidCallback? onOpenShelf;
 
   Widget buildHeader(BuildContext context) => Row(
     children: [
@@ -979,9 +968,13 @@ class DiscoverPage extends StatelessWidget {
     } else if (books.isEmpty && feed?.error != null) {
       body = ContentNotice(
         icon: CupertinoIcons.wifi_exclamationmark,
-        title: '书籍加载失败',
+        title: '最近更新没有加载出来',
         message: feed!.failureMessage,
+        actionLabel: '重新加载',
         onRetry: feed!.retry,
+        secondaryLabel: onOpenShelf == null ? null : '打开书架',
+        onSecondary: onOpenShelf,
+        hint: '已缓存的书仍可离线阅读',
       );
     } else {
       body = NotificationListener<ScrollNotification>(
@@ -1037,6 +1030,7 @@ class DiscoverPage extends StatelessWidget {
                           books: books
                               .take(featuredCount)
                               .toList(growable: false),
+                          heightScale: 290 / 360,
                           reduceMotion: state.reduceMotion,
                           animateEntrance: true,
                           onOpen: (book, tag) => openDetail(
@@ -1129,14 +1123,27 @@ class DiscoverPage extends StatelessWidget {
         ),
       ),
       if (feed != null)
-        GlassMenuAnchor(
-          child: Builder(
-            builder: (buttonContext) => GlassIconButton(
-              icon: CupertinoIcons.line_horizontal_3_decrease,
-              label: '分类与排序',
-              onPressed: () => onChooseCategory != null
-                  ? onChooseCategory!(buttonContext)
-                  : _chooseSort(buttonContext),
+        Flexible(
+          child: GlassTextButton(
+            key: const ValueKey('discover-sort'),
+            dense: true,
+            onPressed: () => onChooseCategory != null
+                ? onChooseCategory!(context)
+                : _chooseSort(context),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const ArchiveIcon(CupertinoIcons.arrow_up_arrow_down, size: 15),
+                const SizedBox(width: 6),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 148),
+                  child: AppText(
+                    '${feed!.sort.label} · ${feed!.tags.isEmpty ? '全部' : feed!.tags.join(' · ')}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -1494,6 +1501,22 @@ void openReadingHistory(
   ),
 );
 
+String novelListMeta(Novel novel, {double? progress}) {
+  final parts = <String>[
+    if (novel.author.isNotEmpty) novel.author,
+    novel.isComplete ? '已完结' : '连载中',
+  ];
+  if (progress != null) {
+    parts.add('读到 ${(progress * 100).round()}%');
+  } else {
+    final tag = novel.tags.isNotEmpty
+        ? novel.tags.first
+        : novel.genre.split(RegExp(r'\s*[·,，、/]\s*')).first.trim();
+    if (tag.isNotEmpty) parts.add(tag);
+  }
+  return parts.join(' · ');
+}
+
 class NovelRow extends StatelessWidget {
   const NovelRow({
     super.key,
@@ -1502,12 +1525,14 @@ class NovelRow extends StatelessWidget {
     this.trailing,
     this.coverHeroTag,
     this.sourceLabel,
+    this.progress,
   });
   final Novel novel;
   final VoidCallback onTap;
   final Widget? trailing;
   final Object? coverHeroTag;
   final String? sourceLabel;
+  final double? progress;
 
   @override
   Widget build(BuildContext context) => JellyTapSurface(
@@ -1546,24 +1571,18 @@ class NovelRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ArchiveCode(ArchiveDesign.fileCode(novel.id)),
-                const SizedBox(height: 4),
                 AppText(
                   novel.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
+                  style: WkType.titleS,
                 ),
                 const SizedBox(height: 7),
                 AppText(
-                  novel.author,
-                  maxLines: 1,
+                  novelListMeta(novel, progress: progress),
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
+                  style: WkType.caption.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
@@ -1585,6 +1604,7 @@ class ShelfPage extends StatefulWidget {
     required this.repository,
     this.showHeader = true,
     this.onSearch,
+    this.onDiscover,
     this.navigation,
   });
   final List<Novel> books;
@@ -1592,6 +1612,7 @@ class ShelfPage extends StatefulWidget {
   final NovelRepository repository;
   final bool showHeader;
   final VoidCallback? onSearch;
+  final VoidCallback? onDiscover;
   final HomeNavigation? navigation;
 
   Widget buildHeader(BuildContext context, {VoidCallback? search}) =>
@@ -1846,6 +1867,7 @@ class _ShelfPageState extends State<ShelfPage>
         state.organization.shelfSelected,
       )),
       books: books,
+      heightScale: 300 / 340,
       reduceMotion: state.reduceMotion,
       animateEntrance: true,
       sourceLabel: state.combinedShelf
@@ -2037,6 +2059,7 @@ class _ShelfPageState extends State<ShelfPage>
                               ],
                               reduceMotion: state.reduceMotion,
                             ),
+                            filterLabel: _shelfFilterLabel(),
                             onOptions: _libraryOptions,
                           ),
                         ],
@@ -2044,56 +2067,39 @@ class _ShelfPageState extends State<ShelfPage>
                     );
                   }
                   if (saved.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 90),
-                      child: Column(
-                        children: [
-                          ArchiveIcon.symbol(
-                            ArchiveSymbol.shelf,
-                            key: const ValueKey('empty-shelf-icon'),
-                            ambient: true,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                            size: 34,
-                          ),
-                          const SizedBox(height: 18),
-                          AppText(
-                            all.isNotEmpty ||
-                                    state.combinedShelf &&
-                                        state.shelfSourceFilter != 'all'
-                                ? '没有符合条件的书'
-                                : _cacheOnly
-                                ? '没有可离线阅读的书'
-                                : state.shelf.isEmpty
-                                ? '书架还空着'
-                                : '没有符合条件的书',
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          AppText(
-                            _cacheOnly
-                                ? state.combinedShelf
-                                      ? '已缓存的收藏和本地导入书籍会显示在这里'
-                                      : '已缓存正文的收藏会显示在这里，本地导入请到「本地」阅读'
-                                : state.combinedShelf && all.isEmpty
-                                ? '收藏喜欢的书，或点击右上角 ＋ 导入书籍'
-                                : state.shelf.isEmpty
-                                ? '在发现页收藏喜欢的书'
-                                : '试试其他关键词或切回全部',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
+                    final filtered =
+                        all.isNotEmpty ||
+                        state.combinedShelf && state.shelfSourceFilter != 'all';
+                    final emptyShelf = state.shelf.isEmpty && !filtered;
+                    return ContentNotice(
+                      expand: false,
+                      icon: CupertinoIcons.book,
+                      symbol: ArchiveSymbol.shelf,
+                      iconKey: const ValueKey('empty-shelf-icon'),
+                      title: filtered || !emptyShelf && !_cacheOnly
+                          ? '没有符合条件的书'
+                          : _cacheOnly
+                          ? '没有可离线阅读的书'
+                          : '书架还空着',
+                      message: _cacheOnly
+                          ? state.combinedShelf
+                                ? '已缓存的收藏和本地导入书籍会显示在这里'
+                                : '已缓存正文的收藏会显示在这里，本地导入请到「本地」阅读'
+                          : state.combinedShelf && all.isEmpty
+                          ? '收藏喜欢的书，或点击右上角 ＋ 导入书籍'
+                          : emptyShelf
+                          ? '在发现页收藏喜欢的书'
+                          : '试试其他关键词或切回全部',
+                      actionLabel: '去发现',
+                      onRetry: emptyShelf && !_cacheOnly
+                          ? widget.onDiscover
+                          : null,
+                      secondaryLabel: filtered ? '查看全部' : null,
+                      onSecondary: filtered
+                          ? () =>
+                                state.setShelfView(filter: 'all', source: 'all')
+                          : null,
+                      hint: emptyShelf ? '收藏后会出现在这张档案架上' : null,
                     );
                   }
                   if (showPreview && index == 1) {
@@ -2187,6 +2193,7 @@ class _ShelfPageState extends State<ShelfPage>
         ? bookshelfSource(book.id, _offline)
         : null,
     coverHeroTag: CoverHeroTag(this, book.id),
+    progress: state.positionFor(book.id)?.fraction,
     onTap: () => openDetail(
       context,
       book,
@@ -2227,6 +2234,27 @@ class _ShelfPageState extends State<ShelfPage>
       ),
     ),
   );
+
+  String _shelfFilterLabel() {
+    final reading = switch (state.shelfFilter) {
+      'unread' => '未读',
+      'reading' => '阅读中',
+      'finished' => '已读完',
+      _ => '全部',
+    };
+    final view = state.shelfLayout == 'shelf' ? '书架' : '列表';
+    final source = switch (state.shelfSourceFilter) {
+      'local' => '本地',
+      'cached' => '缓存',
+      'online' => '在线',
+      _ => null,
+    };
+    return [
+      view,
+      reading,
+      if (state.combinedShelf && source != null) source,
+    ].join(' · ');
+  }
 
   Future<void> _libraryOptions() => showJellySheet<void>(
     context: context,
@@ -2334,9 +2362,14 @@ class _ShelfPageState extends State<ShelfPage>
     }
     final revision = state.shelfRevision(id);
     if (!mounted) return;
+    final title = book?.title;
+    final named = title == null || title.isEmpty ? '这本书' : '《$title》';
     showNovelFeedback(
       this.context,
-      _offline?.availableOffline(id) == true ? '已移出书架，缓存和阅读进度保留' : '已移出书架',
+      _offline?.availableOffline(id) == true
+          ? '已移出$named，缓存和阅读进度保留'
+          : '已移出$named',
+      duration: const Duration(seconds: 4),
       actionLabel: '撤销',
       action: () async {
         if (!state.contains(id) && state.shelfRevision(id) == revision) {
@@ -2389,7 +2422,7 @@ class SettingsPage extends StatelessWidget {
 
   Widget buildHeader(BuildContext context) => Align(
     alignment: Alignment.centerLeft,
-    child: const ArchiveMasthead(title: '设置', code: '04 / SYSTEM PROFILE'),
+    child: const ArchiveMasthead(title: '设置', code: '04·1 / PREFERENCES'),
   );
 
   @override
@@ -2407,60 +2440,112 @@ class SettingsPage extends StatelessWidget {
           MediaQuery.paddingOf(context).bottom + 120,
         ),
         children: [
-          _sectionEntry(
-            context,
-            id: 'usage',
-            title: '使用方式',
-            subtitle: '点书续读、合并书架与离线适配',
-            code: 'SYSTEM / USAGE',
-            icon: CupertinoIcons.square_grid_2x2,
-            options: _usageOptions,
-          ),
-          const SizedBox(height: 14),
-          _sectionEntry(
-            context,
-            id: 'reading',
-            title: '阅读与外观',
-            subtitle: '外观模式、主题配色、字体与听书',
-            code: 'SYSTEM / READING',
-            icon: CupertinoIcons.textformat,
-            options: _readingOptions,
-          ),
-          const SizedBox(height: 14),
-          _sectionEntry(
-            context,
-            id: 'effects',
-            title: '性能与动效',
-            subtitle: '振动反馈、帧率偏好与动态效果',
-            code: 'SYSTEM / EFFECTS',
-            icon: CupertinoIcons.speedometer,
-            options: _effectsOptions,
-          ),
-          const SizedBox(height: 14),
-          if (LanSyncScope.maybeOf(context) case final sync?) ...[
-            FeatureEntry(
-              key: const ValueKey('settings-lan-sync'),
-              title: '局域网续读',
-              subtitle: '连接自己的设备，接着上次的位置阅读',
-              icon: CupertinoIcons.wifi,
-              onTap: () => pushNovelPage<void>(
-                context,
-                LanReadingPage(sync: sync, reduceMotion: state.reduceMotion),
-                reduceMotion: state.reduceMotion,
-                slot: ('settings', 'lan-reading'),
-              ),
+          ContentPanel(
+            child: Column(
+              children: [
+                _sectionEntry(
+                  context,
+                  id: 'usage',
+                  title: '使用方式',
+                  subtitle:
+                      '${state.directReading ? '点书续读' : '点书进详情'} · ${state.combinedShelf ? '合并书架' : '分开书架'}',
+                  code: '04·1 / USAGE',
+                  icon: CupertinoIcons.square_grid_2x2,
+                  options: _usageOptions,
+                ),
+                const Divider(height: 1),
+                _sectionEntry(
+                  context,
+                  id: 'reading',
+                  title: '阅读与外观',
+                  subtitle: _readingSubtitle(),
+                  code: '04·1 / READING',
+                  icon: CupertinoIcons.textformat,
+                  options: _readingOptions,
+                ),
+                const Divider(height: 1),
+                _sectionEntry(
+                  context,
+                  id: 'effects',
+                  title: '性能与动效',
+                  subtitle:
+                      '${state.reduceMotion ? '已减少动效' : '完整动效'} · ${state.haptics.enabled ? '振动开' : '振动关'}',
+                  code: '04·1 / EFFECTS',
+                  icon: CupertinoIcons.speedometer,
+                  options: _effectsOptions,
+                ),
+                if (LanSyncScope.maybeOf(context) case final sync?) ...[
+                  const Divider(height: 1),
+                  FeatureEntry(
+                    key: const ValueKey('settings-lan-sync'),
+                    grouped: true,
+                    title: '局域网续读',
+                    subtitle: '连接自己的设备，接着上次的位置阅读',
+                    icon: CupertinoIcons.wifi,
+                    onTap: () => pushNovelPage<void>(
+                      context,
+                      LanReadingPage(
+                        sync: sync,
+                        reduceMotion: state.reduceMotion,
+                      ),
+                      reduceMotion: state.reduceMotion,
+                      slot: ('settings', 'lan-reading'),
+                    ),
+                  ),
+                ],
+                const Divider(height: 1),
+                _sectionEntry(
+                  context,
+                  id: 'data',
+                  title: '数据与存储',
+                  subtitle: '历史、缓存与本机备份',
+                  code: '04·1 / STORAGE',
+                  icon: CupertinoIcons.folder,
+                  options: _dataOptions,
+                ),
+              ],
             ),
-            const SizedBox(height: 14),
-          ],
-          _sectionEntry(
-            context,
-            id: 'data',
-            title: '数据与存储',
-            subtitle: '阅读历史、缓存管理与备份恢复',
-            code: 'SYSTEM / STORAGE',
-            icon: CupertinoIcons.folder,
-            options: _dataOptions,
           ),
+          if (WenkuFeaturesScope.maybeOf(context)?.account case final account?)
+            AnimatedBuilder(
+              animation: account,
+              builder: (context, _) => !account.authenticated
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      padding: const EdgeInsets.only(top: 28),
+                      child: GlassTextButton(
+                        key: const ValueKey('settings-logout'),
+                        onPressed: account.busy
+                            ? null
+                            : () async {
+                                final confirmed = await confirmNovelAction(
+                                  context,
+                                  title: '退出账号？',
+                                  message: '本机书架、进度与书签不会被删除。',
+                                  confirmLabel: '退出账号',
+                                  reduceMotion: state.reduceMotion,
+                                );
+                                if (!confirmed) return;
+                                try {
+                                  await account.logout();
+                                  if (context.mounted) {
+                                    showNovelFeedback(context, '已退出账号');
+                                  }
+                                } catch (_) {
+                                  if (context.mounted) {
+                                    showNovelFeedback(context, '退出账号失败，请重试');
+                                  }
+                                }
+                              },
+                        child: AppText(
+                          '退出账号',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                    ),
+            ),
         ],
       ),
     ),
@@ -2476,6 +2561,7 @@ class SettingsPage extends StatelessWidget {
     required List<Widget> Function(BuildContext) options,
   }) => FeatureEntry(
     key: ValueKey('settings-$id-entry'),
+    grouped: true,
     title: title,
     subtitle: subtitle,
     icon: icon,
@@ -2660,6 +2746,7 @@ class SettingsPage extends StatelessWidget {
           ReaderValueSlider(
             sliderKey: const ValueKey('settings-font-slider'),
             label: '阅读字号',
+            stepper: true,
             value: state.fontSize,
             min: minimumReaderFontSize,
             max: maximumReaderFontSize,
@@ -2971,6 +3058,20 @@ class SettingsPage extends StatelessWidget {
     ],
   ];
 
+  String _readingSubtitle() {
+    final theme = switch (state.theme) {
+      ThemeMode.light => '浅色',
+      ThemeMode.dark => '深色',
+      ThemeMode.system => '跟随系统',
+    };
+    final palette = switch (state.appPalette.source.name) {
+      'system' => '跟随壁纸',
+      'custom' => WkColor.seedName(state.appPalette.seed),
+      _ => '原色',
+    };
+    return '$theme · $palette · ${state.fontLabel(state.appFontId)}';
+  }
+
   Widget _appearanceSetting(BuildContext context) =>
       GlassSettingMenu<ThemeMode>(
         key: const ValueKey('settings-appearance'),
@@ -3106,6 +3207,7 @@ class InlineSearchResults extends StatelessWidget {
           24,
         ),
         children: [
+          SearchScopeCapsules(feed: feed),
           RecentSearches(state: state, onRecall: onRecall!),
           if (feed.loading && !feed.hasLoaded)
             const Padding(
@@ -3131,19 +3233,47 @@ class InlineSearchResults extends StatelessWidget {
       return SearchSkeleton(status: feed.tagProgressLabel);
     }
     if (books.isEmpty && feed.error != null) {
-      return ContentNotice(
-        icon: CupertinoIcons.wifi_exclamationmark,
-        title: '搜索失败，请稍后重试',
-        message: feed.failureMessage,
-        onRetry: feed.retry,
+      return ListView(
+        padding: EdgeInsets.fromLTRB(
+          24,
+          MediaQuery.paddingOf(context).top + FrostedHeader.toolbarHeight + 12,
+          24,
+          24,
+        ),
+        children: [
+          SearchScopeCapsules(feed: feed),
+          ContentNotice(
+            expand: false,
+            icon: CupertinoIcons.wifi_exclamationmark,
+            title: '搜索失败，请稍后重试',
+            message: feed.failureMessage,
+            onRetry: feed.retry,
+            secondaryLabel: '换个范围',
+            onSecondary: () => feed.selectSearchField(BookSearchField.all),
+          ),
+        ],
       );
     }
     if (books.isEmpty) {
-      return ContentNotice(
-        icon: CupertinoIcons.search,
-        title: feed.searchNotice == null ? '没有找到相关故事' : '部分搜索暂未完成',
-        message: feed.searchNotice ?? '试试更短的书名或作者名',
-        onRetry: feed.searchNotice == null ? null : feed.refresh,
+      return ListView(
+        padding: EdgeInsets.fromLTRB(
+          24,
+          MediaQuery.paddingOf(context).top + FrostedHeader.toolbarHeight + 12,
+          24,
+          24,
+        ),
+        children: [
+          SearchScopeCapsules(feed: feed),
+          ContentNotice(
+            expand: false,
+            icon: CupertinoIcons.search,
+            title: feed.searchNotice == null ? '没有找到相关故事' : '部分搜索暂未完成',
+            message: feed.searchNotice ?? '试试更短的书名、作者，或换一个搜索范围',
+            actionLabel: '重试搜索',
+            onRetry: feed.searchNotice == null ? null : feed.refresh,
+            hint: '也可以点上面的范围胶囊，改搜书名、作者或标签',
+          ),
+        ],
       );
     }
     return NotificationListener<ScrollNotification>(
@@ -3185,6 +3315,7 @@ class InlineSearchResults extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      SearchScopeCapsules(feed: feed),
                       if (feed.query.isEmpty && onRecall != null)
                         RecentSearches(state: state, onRecall: onRecall!),
                       AppText(
@@ -4033,21 +4164,39 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                       enabled: !_reduceMotion && loadError == null,
                       child: AnimatedBuilder(
                         animation: state,
-                        builder: (context, _) => GlassPillButton(
-                          key: const ValueKey('detail-read-button'),
-                          icon: CupertinoIcons.book,
-                          loading: isLoading,
-                          label: _readLabel,
-                          onPressed: isLoading
-                              ? null
-                              : loadError != null
-                              ? onRetry
-                              : novel.chapters.isEmpty
-                              ? null
-                              : () => _openReader(
-                                  context,
-                                  state.chapterForNovel(novel),
-                                ),
+                        builder: (context, _) => Row(
+                          children: [
+                            GlassTextButton(
+                              key: const ValueKey('detail-shelf-button'),
+                              onPressed: isLocalBook(novel.id)
+                                  ? null
+                                  : () => _toggleShelf(context),
+                              child: AppText(
+                                state.contains(novel.id) ? '已在书架' : '加入书架',
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: GlassPillButton(
+                                key: const ValueKey('detail-read-button'),
+                                icon: CupertinoIcons.book,
+                                filled: true,
+                                width: double.infinity,
+                                loading: isLoading,
+                                label: _readLabel,
+                                onPressed: isLoading
+                                    ? null
+                                    : loadError != null
+                                    ? onRetry
+                                    : novel.chapters.isEmpty
+                                    ? null
+                                    : () => _openReader(
+                                        context,
+                                        state.chapterForNovel(novel),
+                                      ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -4190,70 +4339,106 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
       code: ArchiveDesign.fileCode(novel.id),
     ),
     actions: [
-      if (!isLocalBook(novel.id) && repository is OfflineNovelRepository)
-        if (isLoading || loadError != null || novel.chapters.isEmpty)
-          const GlassIconButton(
-            icon: CupertinoIcons.cloud_download,
-            label: '离线缓存',
-            onPressed: null,
-          )
-        else
-          OfflineBookMenu(
-            repository: repository as OfflineNovelRepository,
-            novel: novel,
-            startChapter: state.chapterForNovel(novel),
-            reduceMotion: state.reduceMotion,
-          ),
       if (isLocalBook(novel.id))
         GlassIconButton(
           key: const ValueKey('local-book-config'),
-          icon: CupertinoIcons.gear_alt,
+          icon: CupertinoIcons.ellipsis,
           label: '配置本地书籍',
-          onPressed: () async {
-            final local = repository is OfflineNovelRepository
-                ? (repository as OfflineNovelRepository).local
-                : null;
-            if (local == null) return;
-            final result = await pushNovelPage<LocalBookEditResult>(
-              context,
-              LocalBookEditor(book: novel, books: local, library: state),
-              reduceMotion: _reduceMotion,
-            );
-            if (!mounted) return;
-            if (result == LocalBookEditResult.hidden ||
-                result == LocalBookEditResult.deleted ||
-                result == LocalBookEditResult.regrouped) {
-              if (!LibraryWorkspace.close(this.context)) {
-                Navigator.pop(this.context);
-              }
-            } else if (result == LocalBookEditResult.saved) {
-              setState(() {});
-            }
-          },
+          onPressed: () => _openLocalConfig(context),
         )
-      else
-        AnimatedBuilder(
-          animation: state,
-          builder: (context, child) => GlassIconButton(
-            icon: state.contains(novel.id)
-                ? CupertinoIcons.bookmark_fill
-                : CupertinoIcons.bookmark,
-            label: state.contains(novel.id) ? '移出书架' : '加入书架',
-            onPressed: () async {
-              if (_shelfChanging) return;
-              _shelfChanging = true;
-              try {
-                await state.toggleShelf(novel.id, novel: novel);
-              } catch (_) {
-                if (context.mounted) showNovelFeedback(context, '书架操作保存失败，请重试');
-              } finally {
-                _shelfChanging = false;
-              }
-            },
-          ),
+      else if (repository is OfflineNovelRepository)
+        GlassIconButton(
+          key: const ValueKey('detail-more'),
+          icon: CupertinoIcons.ellipsis,
+          label: '更多操作',
+          onPressed: () => _detailMenu(context),
         ),
     ],
   );
+
+  Future<void> _toggleShelf(BuildContext context) async {
+    if (_shelfChanging || isLocalBook(novel.id)) return;
+    _shelfChanging = true;
+    final removing = state.contains(novel.id);
+    final addedAt = state.addedAt(novel.id);
+    try {
+      if (!removing) {
+        await state.setShelfMembership(novel.id, true, novel: novel);
+        if (context.mounted) {
+          showNovelFeedback(context, '已加入《${novel.title}》');
+        }
+        return;
+      }
+      await state.setShelfMembership(novel.id, false);
+      final revision = state.shelfRevision(novel.id);
+      if (!context.mounted) return;
+      showNovelFeedback(
+        context,
+        '已移出《${novel.title}》',
+        duration: const Duration(seconds: 4),
+        actionLabel: '撤销',
+        action: () async {
+          if (!state.contains(novel.id) &&
+              state.shelfRevision(novel.id) == revision) {
+            await state.setShelfMembership(
+              novel.id,
+              true,
+              novel: novel,
+              restoredAddedAt: addedAt,
+            );
+          }
+        },
+      );
+    } catch (_) {
+      if (context.mounted) showNovelFeedback(context, '书架操作保存失败，请重试');
+    } finally {
+      _shelfChanging = false;
+    }
+  }
+
+  Future<void> _detailMenu(BuildContext context) async {
+    if (repository is! OfflineNovelRepository) return;
+    final action = await showGlassMenu<String>(
+      context: context,
+      reduceMotion: state.reduceMotion,
+      builder: (menu) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GlassMenuItem(
+            label: '离线缓存',
+            onPressed: () => Navigator.pop(menu, 'cache'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || action != 'cache') return;
+    await OfflineBookMenu(
+      repository: repository as OfflineNovelRepository,
+      novel: novel,
+      startChapter: state.chapterForNovel(novel),
+      reduceMotion: state.reduceMotion,
+    ).showMenu(this.context);
+  }
+
+  Future<void> _openLocalConfig(BuildContext context) async {
+    final local = repository is OfflineNovelRepository
+        ? (repository as OfflineNovelRepository).local
+        : null;
+    if (local == null) return;
+    final result = await pushNovelPage<LocalBookEditResult>(
+      context,
+      LocalBookEditor(book: novel, books: local, library: state),
+      reduceMotion: _reduceMotion,
+    );
+    if (!mounted) return;
+    if (result == LocalBookEditResult.hidden ||
+        result == LocalBookEditResult.deleted ||
+        result == LocalBookEditResult.regrouped) {
+      if (!LibraryWorkspace.close(this.context)) Navigator.pop(this.context);
+    } else if (result == LocalBookEditResult.saved) {
+      setState(() {});
+    }
+  }
 
   Future<void> _openReader(
     BuildContext context,
@@ -4789,7 +4974,22 @@ class _ReaderPageState extends State<ReaderPage>
   }
 
   Future<void> _listen() async {
-    if (_listening != null) await _settings(initialTab: 'listening');
+    final listening = _listening;
+    if (listening == null) {
+      showNovelFeedback(context, '当前环境没有听书');
+      return;
+    }
+    final position = _currentPosition();
+    await showListeningPanel(
+      context,
+      controller: listening,
+      novel: widget.novel,
+      chapter: _chapter,
+      paragraph: position?.paragraphIndex ?? 0,
+      languages: _unfilteredContent?.languages ?? const {},
+      reduceMotion: widget.state.reduceMotion,
+      surfaceWrapper: _readerSurface,
+    );
   }
 
   void _suspendListeningFollow({bool userDrag = false}) {
@@ -5229,6 +5429,17 @@ class _ReaderPageState extends State<ReaderPage>
           cache: widget.repository is OfflineNovelRepository
               ? (widget.repository as OfflineNovelRepository).cache
               : null,
+          bookmarks: ReaderTools(
+            novel: widget.novel,
+            state: widget.state,
+            position: _currentPosition(),
+            bookmarksOnly: true,
+            onAddBookmark: _addBookmark,
+            onFontSize: (value) => _applyTypography(fontSize: value),
+            onLineHeight: (value) => _applyTypography(lineHeight: value),
+            onReset: () {},
+            onPreferencesChanged: _applyReaderPreferences,
+          ),
         ),
       );
       if (!mounted) return;
@@ -7389,7 +7600,9 @@ class _ReaderPageState extends State<ReaderPage>
                         ],
                       ),
                       title: ArchiveRouteTitle(
-                        title: _sourceBook.title,
+                        title: widget.novel.chapters.isEmpty
+                            ? _sourceBook.title
+                            : widget.novel.chapters[_chapter].title,
                         code:
                             'READ / ${ArchiveDesign.fileCode(widget.novel.id)}',
                       ),
@@ -7456,49 +7669,130 @@ class _ReaderPageState extends State<ReaderPage>
                         ),
                       ),
                     ActiveListenableBuilder(
-                      listenable: widget.state.settingsChanges,
-                      builder: (context) => GlassDock(
-                        key: const ValueKey('reader-liquid-dock'),
-                        selectedIndex: 1,
-                        reduceMotion: widget.state.reduceMotion,
-                        animateInactiveIcons: true,
-                        items: [
-                          GlassDockItem(
-                            CupertinoIcons.arrow_left,
-                            '上一章',
-                            haptic: HapticCue.pageTurn,
-                            enabled: _chapter > 0,
-                          ),
-                          GlassDockItem(
-                            CupertinoIcons.book,
-                            _authoredDirectory
-                                ? '${_directoryOrdinal + 1} / ${_sourceBook.directory.length}'
-                                : '${widget.novel.chapters.isEmpty ? 0 : _chapter + 1} / ${widget.novel.chapters.length}',
-                            id: 'reader-catalogue',
-                            haptic: HapticCue.action,
-                            enabled: widget.novel.chapters.isNotEmpty,
-                            selectableOnDrag: false,
-                            semanticLabel: _authoredDirectory
-                                ? '目录，${_sourceBook.directory[_directoryOrdinal].title}，共 ${_sourceBook.directory.length} 项'
-                                : '目录，当前第 ${widget.novel.chapters.isEmpty ? 0 : _chapter + 1} 章，共 ${widget.novel.chapters.length} 章',
-                            symbol: ArchiveSymbol.contents,
-                          ),
-                          GlassDockItem(
-                            CupertinoIcons.arrow_right,
-                            '下一章',
-                            haptic: HapticCue.pageTurn,
-                            enabled:
-                                _chapter + 1 < widget.novel.chapters.length,
-                          ),
-                        ],
-                        onSelected: (index) {
-                          if (index == 1) {
-                            _catalogue();
-                          } else {
-                            _go(_chapter + (index == 0 ? -1 : 1));
-                          }
-                        },
-                      ),
+                      listenable: widget.state.readerSettingsChanges,
+                      builder: (context) {
+                        final night =
+                            _readerPreferences.paper == ReaderPaper.night;
+                        final fraction = _currentPosition()?.fraction ?? 0;
+                        final canPrev = _chapter > 0;
+                        final canNext =
+                            _chapter + 1 < widget.novel.chapters.length;
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                GlassTextButton(
+                                  dense: true,
+                                  onPressed: canPrev
+                                      ? () => _go(_chapter - 1)
+                                      : null,
+                                  child: const AppText('上一章'),
+                                ),
+                                Expanded(
+                                  child: ReaderValueSlider(
+                                    sliderKey: const ValueKey(
+                                      'reader-chapter-progress',
+                                    ),
+                                    label: '本章进度',
+                                    value: fraction,
+                                    min: 0,
+                                    max: 1,
+                                    format: (value) =>
+                                        '${(value * 100).round()}%',
+                                    onCommitted: _ready
+                                        ? (value) => _seekProgress(value)
+                                        : null,
+                                  ),
+                                ),
+                                GlassTextButton(
+                                  dense: true,
+                                  onPressed: canNext
+                                      ? () => _go(_chapter + 1)
+                                      : null,
+                                  child: const AppText('下一章'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: GlassDock(
+                                key: const ValueKey('reader-liquid-dock'),
+                                selectedIndex: night ? 4 : -1,
+                                reduceMotion: widget.state.reduceMotion,
+                                animateInactiveIcons: true,
+                                items: [
+                                  GlassDockItem(
+                                    CupertinoIcons.list_bullet,
+                                    '目录',
+                                    id: 'reader-catalogue',
+                                    haptic: HapticCue.action,
+                                    enabled: widget.novel.chapters.isNotEmpty,
+                                    selectableOnDrag: false,
+                                    semanticLabel: _authoredDirectory
+                                        ? '目录，${_sourceBook.directory[_directoryOrdinal].title}，共 ${_sourceBook.directory.length} 项'
+                                        : '目录，当前第 ${widget.novel.chapters.isEmpty ? 0 : _chapter + 1} 章，共 ${widget.novel.chapters.length} 章',
+                                    symbol: ArchiveSymbol.contents,
+                                  ),
+                                  const GlassDockItem(
+                                    CupertinoIcons.textformat,
+                                    '外观',
+                                    id: 'reader-appearance',
+                                    haptic: HapticCue.action,
+                                    selectableOnDrag: false,
+                                  ),
+                                  GlassDockItem(
+                                    CupertinoIcons.headphones,
+                                    '听书',
+                                    id: 'reader-listening',
+                                    haptic: HapticCue.action,
+                                    enabled: _listening != null,
+                                    selectableOnDrag: false,
+                                  ),
+                                  const GlassDockItem(
+                                    CupertinoIcons.search,
+                                    '查找',
+                                    id: 'reader-find',
+                                    haptic: HapticCue.action,
+                                    selectableOnDrag: false,
+                                  ),
+                                  GlassDockItem(
+                                    night
+                                        ? CupertinoIcons.moon_fill
+                                        : CupertinoIcons.moon,
+                                    '夜读',
+                                    id: 'reader-night',
+                                    haptic: HapticCue.selection,
+                                    selectableOnDrag: false,
+                                  ),
+                                ],
+                                onSelected: (index) {
+                                  switch (index) {
+                                    case 0:
+                                      _catalogue();
+                                    case 1:
+                                      _settings(initialTab: 'appearance');
+                                    case 2:
+                                      _listen();
+                                    case 3:
+                                      _findInChapter();
+                                    case 4:
+                                      _applyReaderPreferences(
+                                        _readerPreferences.copyWith(
+                                          paper: night
+                                              ? ReaderPaper.system
+                                              : ReaderPaper.night,
+                                        ),
+                                        true,
+                                      );
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),

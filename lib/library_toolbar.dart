@@ -17,9 +17,11 @@ class LibraryToolbar extends StatelessWidget {
     this.manageKey,
     this.activeFilters = 0,
     this.loading = false,
+    this.filterLabel,
   });
   final String category;
   final int count, activeFilters;
+  final String? filterLabel;
   final bool loading;
   final VoidCallback? onCategory, onOptions, onManage;
   final Key? categoryKey, optionsKey, manageKey;
@@ -62,12 +64,22 @@ class LibraryToolbar extends StatelessWidget {
         ),
       const SizedBox(width: 8),
       Semantics(
+        label: '显示与筛选',
         value: activeFilters == 0 ? '未筛选' : '$activeFilters 项筛选',
-        child: GlassIconButton(
+        button: true,
+        child: GlassTextButton(
           key: optionsKey,
-          icon: CupertinoIcons.slider_horizontal_3,
-          label: '显示与筛选',
+          dense: true,
           onPressed: onOptions,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 132),
+            child: AppText(
+              filterLabel ?? '筛选',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
         ),
       ),
       if (onManage != null)

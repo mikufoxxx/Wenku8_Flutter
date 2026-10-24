@@ -172,10 +172,11 @@ void main() {
       expect(dock.left, greaterThanOrEqualTo(0));
       expect(dock.right, lessThanOrEqualTo(size.width));
       final catalogue = tester.getRect(
-        find.byKey(const ValueKey('dock-tab-1')),
+        find.byKey(const ValueKey('dock-tab-0')),
       );
       expect(dock.contains(catalogue.center), true);
-      expect(catalogue.center.dx, closeTo(dock.center.dx, 1));
+      final middle = tester.getRect(find.byKey(const ValueKey('dock-tab-2')));
+      expect(middle.center.dx, closeTo(dock.center.dx, 1));
       final details = tester.getRect(
         find.byKey(const ValueKey('reader-details-entry')),
       );
@@ -185,7 +186,7 @@ void main() {
             .widget<GlassDock>(find.byKey(const ValueKey('reader-liquid-dock')))
             .items
             .length,
-        3,
+        5,
       );
       expect(
         tester.getRect(find.byKey(const ValueKey('reader-page-count'))).bottom,

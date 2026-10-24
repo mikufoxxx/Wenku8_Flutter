@@ -28,6 +28,7 @@ import 'motion_ui.dart';
 import 'native_effects.dart';
 import 'performance_preferences.dart';
 import 'scroll_edge_blur.dart';
+import 'wk_tokens.dart';
 
 export 'scroll_edge_blur.dart' show ProgressiveBlur, ScrollEdgeProfile;
 export 'loading_ui.dart';
@@ -108,7 +109,7 @@ ThemeData novelTheme(
     onPrimary: dark ? ink : Colors.white,
     surface: dark ? ArchiveDesign.darkSurface : ArchiveDesign.surface,
     onSurface: dark ? ArchiveDesign.darkInk : ink,
-    onSurfaceVariant: dark ? ArchiveDesign.darkMuted : const Color(0xFF646B62),
+    onSurfaceVariant: dark ? ArchiveDesign.darkMuted : WkColor.muted,
   );
   late final classicScheme = dark
       ? baseScheme.copyWith(
@@ -323,15 +324,15 @@ abstract final class AppControls {
         haptics: haptics,
         onValueChanged: onValueChanged,
         foregroundColor: scheme.onSurface,
+        selectedForegroundColor: scheme.onPrimary,
         style: _material(context, plate: true),
         pillStyle: easy.LiquidGlassSegmentedPillStyle(
           animated: !MediaQuery.disableAnimationsOf(context),
-          glass: PerformanceScope.of(context).glass,
-          duration: NovelMotion.enter,
+          // The selected lane is an inverse fill, not a second glass lens.
+          glass: false,
+          duration: NovelMotion.quick,
           glassStyle: _material(context),
-          restStyle: easy.LiquidGlassStyle(
-            color: scheme.onSurface.withValues(alpha: .065),
-          ),
+          restStyle: easy.LiquidGlassStyle(color: scheme.primary),
         ),
       ),
     );
@@ -887,11 +888,15 @@ class GlassPillButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.loading = false,
+    this.filled = false,
+    this.width = 196,
   });
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
   final bool loading;
+  final bool filled;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
@@ -899,7 +904,10 @@ class GlassPillButton extends StatelessWidget {
     final scheme = theme.colorScheme;
     final action = loading ? null : onPressed;
     final color =
-        (theme.extension<AppTonalColors>()?.action ?? scheme.onSurface)
+        (filled
+                ? scheme.onPrimary
+                : (theme.extension<AppTonalColors>()?.action ??
+                      scheme.onSurface))
             .withValues(alpha: action == null ? .45 : 1);
     return Semantics(
       button: true,
@@ -908,10 +916,12 @@ class GlassPillButton extends StatelessWidget {
         radius: 27,
         thickness: 16,
         elevated: false,
+        tintColor: filled ? scheme.primary : null,
+        tintOpacity: filled ? 1 : null,
         onTap: action,
         semanticLabel: label,
         child: SizedBox(
-          width: 196,
+          width: width,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 54),
             child: Padding(
@@ -966,12 +976,16 @@ class GlassTextButton extends StatelessWidget {
     required this.child,
     required this.onPressed,
     this.compact = false,
+    this.dense = false,
+    this.filled = false,
     this.selected,
     this.haptic = HapticCue.action,
   });
   final Widget child;
   final VoidCallback? onPressed;
   final bool compact;
+  final bool dense;
+  final bool filled;
   final bool? selected;
   final HapticCue? haptic;
 
@@ -979,54 +993,54 @@ class GlassTextButton extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     // A shared vertical gutter also separates wrapped rows and consecutive
     // actions on secondary settings pages. The optical plates never touch.
-    padding: const EdgeInsets.symmetric(vertical: 4),
+    padding: EdgeInsets.symmetric(vertical: dense ? 0 : 4),
     child: Semantics(
       button: true,
       enabled: onPressed != null,
       selected: selected,
       child: LiquidGlass(
-        radius: 22,
+        radius: dense ? 18 : 22,
         elevated: false,
-        tintColor: selected == true
-            ? Color.lerp(
-                GlassAppearance.tintOf(
-                  context,
-                  opacity: GlassAppearance.of(context).opacity,
-                ),
-                Theme.of(context).extension<AppTonalColors>()?.action ??
-                    Theme.of(context).colorScheme.onSurface,
-                .10,
-              )
+        tintColor: filled || selected == true
+            ? Theme.of(context).colorScheme.primary
             : null,
+        tintOpacity: filled || selected == true ? 1 : null,
         onTap: onPressed,
         haptic: selected != null && haptic == HapticCue.action
             ? HapticCue.selection
             : haptic,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            minWidth: compact ? 48 : 64,
-            minHeight: 48,
+            minWidth: dense
+                ? 36
+                : compact
+                ? 48
+                : 64,
+            minHeight: dense ? 36 : 48,
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: compact ? 8 : 14,
-              vertical: 10,
+              horizontal: dense
+                  ? 12
+                  : compact
+                  ? 8
+                  : 14,
+              vertical: dense ? 6 : 10,
             ),
             child: Align(
               widthFactor: 1,
               heightFactor: 1,
               child: DefaultTextStyle.merge(
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: dense ? 13 : 14,
                   height: 1.4,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: selected == true || filled
+                      ? FontWeight.w700
+                      : FontWeight.w500,
                   color:
-                      ((selected == true
-                                  ? Theme.of(
-                                      context,
-                                    ).extension<AppTonalColors>()?.action
-                                  : null) ??
-                              Theme.of(context).colorScheme.onSurface)
+                      (filled || selected == true
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : Theme.of(context).colorScheme.onSurface)
                           .withValues(alpha: onPressed == null ? .45 : 1),
                 ),
                 child: child,
@@ -1500,6 +1514,12 @@ class ContentNotice extends StatelessWidget {
     this.onRetry,
     this.actionLabel = '重试',
     this.secondaryAction,
+    this.secondaryLabel,
+    this.onSecondary,
+    this.hint,
+    this.expand = true,
+    this.iconKey,
+    this.symbol,
   });
   final IconData icon;
   final String title;
@@ -1507,47 +1527,89 @@ class ContentNotice extends StatelessWidget {
   final VoidCallback? onRetry;
   final String actionLabel;
   final Widget? secondaryAction;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
+  final String? hint;
+  final bool expand;
+  final Key? iconKey;
+  final ArchiveSymbol? symbol;
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+  Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final panel = ContentPanel(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ArchiveIcon(
-            icon,
-            ambient: true,
-            size: 34,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          if (symbol != null)
+            ArchiveIcon.symbol(
+              symbol!,
+              key: iconKey,
+              ambient: true,
+              size: 34,
+              color: muted,
+            )
+          else
+            ArchiveIcon(
+              icon,
+              key: iconKey,
+              ambient: true,
+              size: 34,
+              color: muted,
+            ),
           const SizedBox(height: 16),
-          AppText(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-          ),
+          AppText(title, textAlign: TextAlign.center, style: WkType.titleM),
           if (message != null) ...[
             const SizedBox(height: 8),
             AppText(
               message!,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                height: 1.6,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              style: WkType.body.copyWith(color: muted),
             ),
           ],
-          if (onRetry != null) ...[
+          if (onRetry != null ||
+              onSecondary != null ||
+              secondaryAction != null) ...[
             const SizedBox(height: 16),
-            GlassTextButton(onPressed: onRetry, child: AppText(actionLabel)),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (onSecondary != null && secondaryLabel != null)
+                  GlassTextButton(
+                    onPressed: onSecondary,
+                    child: AppText(secondaryLabel!),
+                  ),
+                ?secondaryAction,
+                if (onRetry != null)
+                  GlassTextButton(
+                    filled: true,
+                    onPressed: onRetry,
+                    child: AppText(actionLabel),
+                  ),
+              ],
+            ),
           ],
-          ?secondaryAction,
+          if (hint != null) ...[
+            const SizedBox(height: 12),
+            AppText(
+              hint!,
+              textAlign: TextAlign.center,
+              style: WkType.caption.copyWith(color: muted),
+            ),
+          ],
         ],
       ),
-    ),
-  );
+    );
+    if (!expand) return panel;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: panel,
+      ),
+    );
+  }
 }
 
 PageRoute<T> softRoute<T>(

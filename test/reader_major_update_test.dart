@@ -264,7 +264,12 @@ void main() {
             ),
           )
           .value;
-      BuildContext titleContext() => tester.element(find.text(book.title));
+      BuildContext titleContext() => tester.element(
+        find.descendant(
+          of: find.byKey(const ValueKey('reader-chrome-header')),
+          matching: find.text(book.chapters.first.title),
+        ),
+      );
       expect(barStyle().statusBarIconBrightness, Brightness.light);
       expect(Theme.of(titleContext()).brightness, Brightness.dark);
       await library.setReaderPreferences(
@@ -351,6 +356,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.text('外观'));
+      await tester.pumpAndSettle();
       expect(find.text('阅读配色'), findsOneWidget);
       await tester.ensureVisible(
         find.byKey(const ValueKey('reader-paper-parchment')),
@@ -358,7 +365,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('reader-paper-parchment')));
       await tester.pumpAndSettle();
       expect(library.readerPreferences.paper, ReaderPaper.parchment);
-      await tester.tap(find.text('操作'));
+      await tester.tap(find.text('翻页'));
       await tester.pumpAndSettle();
       expect(find.text('分区点按翻页'), findsOneWidget);
       expect(

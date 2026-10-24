@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'archive_motion.dart';
 import 'loading_handoff.dart';
 import 'loading_ui.dart';
+import 'wk_tokens.dart';
 
 export 'archive_motion.dart';
 export 'loading_handoff.dart';
@@ -15,11 +16,12 @@ export 'loading_handoff.dart';
 /// One motion vocabulary for controls, menus, sheets and in-place expansion.
 /// The paper flight/reveal are choreographed sequences, not repeating effects.
 abstract final class NovelMotion {
-  static const contact = Duration(milliseconds: 120);
-  static const enter = Duration(milliseconds: 420);
-  static const exit = Duration(milliseconds: 320);
-  static const coverFlight = Duration(milliseconds: 1000);
-  static const coverReturn = Duration(milliseconds: 840);
+  static const contact = WkMotion.contact;
+  static const quick = WkMotion.quick;
+  static const enter = WkMotion.enter;
+  static const exit = WkMotion.exit;
+  static const coverFlight = WkMotion.coverFlight;
+  static const coverReturn = Duration(milliseconds: 470);
   static const reveal = enter;
   static const ease = Curves.easeOutCubic;
   static const retract = Curves.easeInCubic;

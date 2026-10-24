@@ -286,9 +286,7 @@ void main({
       expect(find.text('开始阅读 · 第1章'), findsOneWidget);
       await tester.tap(find.byKey(_readKey));
       await tester.pumpAndSettle();
-      await tester.tapAt(
-        tester.getCenter(find.byKey(const ValueKey('dock-tab-2'))),
-      );
+      await tester.tap(find.text('下一章'));
       await tester.pumpAndSettle();
       await tester.tap(
         find

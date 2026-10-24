@@ -27,12 +27,17 @@ class ArchiveFileCarousel extends StatefulWidget {
     this.reduceMotion = false,
     this.animateEntrance = false,
     this.sourceLabel,
+    this.heightScale = 1,
   });
   final List<Novel> books;
   final void Function(Novel book, Object heroTag) onOpen;
   final bool reduceMotion;
   final bool animateEntrance;
   final String? Function(Novel)? sourceLabel;
+
+  /// Scales the computed cover. Discovery uses 290/360 and the shelf preview
+  /// uses 300/340 so the shared geometry stays intact.
+  final double heightScale;
   @override
   State<ArchiveFileCarousel> createState() => _ArchiveFileCarouselState();
 }
@@ -186,6 +191,7 @@ class _ArchiveFileCarouselState extends State<ArchiveFileCarousel>
           books: widget.books,
           onOpen: widget.onOpen,
           sourceLabel: widget.sourceLabel,
+          heightScale: widget.heightScale,
         ),
       );
     }
@@ -202,7 +208,7 @@ class _ArchiveFileCarouselState extends State<ArchiveFileCarousel>
               final width = constraints.maxWidth;
               final spine = _WavePose.spineFor(width);
               final pitch = _WavePose.pitchFor(width);
-              final cover = _WavePose.coverFor(width);
+              final cover = _WavePose.coverFor(width) * widget.heightScale;
               final height = ArchiveShelfGeometry.bodyHeight(cover);
               _pose.configure(width, pitch);
               _scroll ??= ScrollController(
@@ -272,107 +278,122 @@ class _ArchiveFileCarouselState extends State<ArchiveFileCarousel>
                     valueListenable: _active,
                     builder: (context, index, _) {
                       final book = widget.books[index % widget.books.length];
-                      final scale =
-                          MediaQuery.textScalerOf(context).scale(17) / 17;
-                      return SizedBox(
-                        height: 16 + 17 * 1.35 * 2 * scale + 12 * 1.4 * scale,
-                        child: LoadingHandoff(
-                          animation: _entrance,
-                          crossfade: true,
-                          start: .2,
-                          end: .75,
-                          placeholder: const LoadingSkeleton(
-                            layout: SkeletonLayout.actions,
-                          ),
-                          child: JellyTapSurface(
-                            key: const ValueKey('archive-shelf-open'),
-                            // Opening from the cover, caption, or semantics
-                            // uses the same committed-action feedback in _open.
-                            haptic: null,
-                            onTap: () => _open(_pose.focus.round()),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        AppText(
-                                          book.title,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 17,
-                                            height: 1.35,
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                      final muted = Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant;
+                      final update = book.lastUpdate?.trim();
+                      final tags = book.tags.take(3).join(' · ');
+                      return LoadingHandoff(
+                        animation: _entrance,
+                        crossfade: true,
+                        start: .2,
+                        end: .75,
+                        placeholder: const LoadingSkeleton(
+                          layout: SkeletonLayout.actions,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: JellyTapSurface(
+                                  key: const ValueKey('archive-shelf-open'),
+                                  haptic: null,
+                                  onTap: () => _open(_pose.focus.round()),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      AppText(
+                                        book.title,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          height: 1.25,
+                                          fontWeight: FontWeight.w700,
                                         ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      AppText(
+                                        [
+                                          book.author,
+                                          book.isComplete ? '已完结' : '连载中',
+                                          if (update != null &&
+                                              update.isNotEmpty)
+                                            update
+                                          else if (book.chapterCount > 0)
+                                            '${book.chapterCount} 章',
+                                        ].join(' · '),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          height: 1.4,
+                                          color: muted,
+                                        ),
+                                      ),
+                                      if (tags.isNotEmpty) ...[
+                                        const SizedBox(height: 2),
                                         AppText(
-                                          '${book.author} · ${book.isComplete ? '已完结' : '连载中'}',
+                                          tags,
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
                                             fontSize: 12,
                                             height: 1.4,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant,
+                                            color: muted,
                                           ),
                                         ),
                                       ],
-                                    ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 8),
-                                  const ArchiveIcon(
+                                ),
+                              ),
+                              if (widget.books.length > 1) ...[
+                                ArchiveIconButton(
+                                  tooltip: '上一份档案',
+                                  haptic: null,
+                                  onPressed: () => _step(-1),
+                                  icon: const ArchiveIcon(
+                                    CupertinoIcons.chevron_left,
+                                    size: 16,
+                                  ),
+                                ),
+                                Semantics(
+                                  label:
+                                      '第 ${index % widget.books.length + 1} 本，共 ${widget.books.length} 本，循环浏览',
+                                  child: ArchiveCode(
+                                    '${(index % widget.books.length + 1).toString().padLeft(2, '0')} / ${widget.books.length.toString().padLeft(2, '0')}',
+                                  ),
+                                ),
+                                ArchiveIconButton(
+                                  tooltip: '下一份档案',
+                                  haptic: null,
+                                  onPressed: () => _step(1),
+                                  icon: const ArchiveIcon(
+                                    CupertinoIcons.chevron_right,
+                                    size: 16,
+                                  ),
+                                ),
+                              ],
+                              JellyTapSurface(
+                                haptic: null,
+                                onTap: () => _open(_pose.focus.round()),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: ArchiveIcon(
                                     CupertinoIcons.arrow_up_right,
                                     size: 20,
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       );
                     },
-                  ),
-                  ValueListenableBuilder<int>(
-                    valueListenable: _active,
-                    builder: (context, index, _) => Row(
-                      children: [
-                        const Spacer(),
-                        if (widget.books.length > 1) ...[
-                          ArchiveIconButton(
-                            tooltip: '上一份档案',
-                            haptic: null,
-                            onPressed: () => _step(-1),
-                            icon: const ArchiveIcon(
-                              CupertinoIcons.chevron_left,
-                              size: 13,
-                            ),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                          Semantics(
-                            label:
-                                '第 ${index % widget.books.length + 1} 本，共 ${widget.books.length} 本，循环浏览',
-                            child: ArchiveCode(
-                              '${(index % widget.books.length + 1).toString().padLeft(2, '0')} / ${widget.books.length.toString().padLeft(2, '0')}',
-                            ),
-                          ),
-                          ArchiveIconButton(
-                            tooltip: '下一份档案',
-                            haptic: null,
-                            onPressed: () => _step(1),
-                            icon: const ArchiveIcon(
-                              CupertinoIcons.chevron_right,
-                              size: 13,
-                            ),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                        ],
-                      ],
-                    ),
                   ),
                 ],
               );
@@ -523,10 +544,12 @@ class _FlatArchiveCarousel extends StatefulWidget {
     required this.books,
     required this.onOpen,
     this.sourceLabel,
+    this.heightScale = 1,
   });
   final List<Novel> books;
   final void Function(Novel book, Object heroTag) onOpen;
   final String? Function(Novel)? sourceLabel;
+  final double heightScale;
   @override
   State<_FlatArchiveCarousel> createState() => _FlatArchiveCarouselState();
 }
@@ -549,7 +572,7 @@ class _FlatArchiveCarouselState extends State<_FlatArchiveCarousel> {
   @override
   Widget build(BuildContext context) => SizedBox(
     key: const ValueKey('archive-flat-carousel'),
-    height: 300,
+    height: 300 * widget.heightScale,
     child: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),

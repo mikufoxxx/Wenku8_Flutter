@@ -199,7 +199,7 @@ class MyPage extends StatelessWidget {
                   context,
                   ArchiveFeaturePage(
                     title: '设置',
-                    code: 'SYSTEM / PREFERENCES',
+                    code: '04·1 / PREFERENCES',
                     child: SettingsPage(
                       state: state,
                       repository: repository,

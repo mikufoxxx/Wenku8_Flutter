@@ -5,6 +5,7 @@ import 'app_language.dart';
 
 import 'archive_motion.dart';
 import 'library_reflow.dart';
+import 'wk_tokens.dart';
 
 /// The archive vocabulary is foreground geometry, not another filter layer.
 /// Codes, rules and registration marks are static and carry no idle ticker.
@@ -17,11 +18,11 @@ abstract final class ArchiveDesign {
   static const darkRaised = Color(0xFF2D2D2D);
   static const darkRaisedHigh = Color(0xFF3A3A3A);
   static const darkOutline = Color(0xFF3C3C3C);
-  static const darkInk = Color(0xFFF2F2F2);
-  static const darkMuted = Color(0xFFB7B7B7);
+  static const darkInk = WkColor.darkInk;
+  static const darkMuted = WkColor.darkMuted;
   static const darkMilk = Color(0xFFF6F6F6);
-  static const panelRadius = 4.0;
-  static const coverRadius = 3.0;
+  static const panelRadius = WkRadius.paper;
+  static const coverRadius = WkRadius.paper;
 
   /// A thin neutral milk layer, not a white opaque sheet or another blur pass.
   static Color glassTint(Brightness brightness, {required double opacity}) =>
@@ -30,14 +31,12 @@ abstract final class ArchiveDesign {
       ? Color.lerp(darkMilk, darkSurface, opacity.clamp(0.0, 1.0))!
       : milk;
 
-  static TextStyle codeStyle(BuildContext context, {Color? color}) => TextStyle(
-    fontFamily: 'monospace',
-    fontSize: 9,
-    height: 1.35,
-    letterSpacing: 1.05,
-    fontWeight: FontWeight.w500,
-    color: color ?? Theme.of(context).colorScheme.onSurfaceVariant,
-  );
+  static TextStyle codeStyle(BuildContext context, {Color? color}) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return WkType.code.copyWith(
+      color: color ?? (dark ? WkColor.darkCode : WkColor.code),
+    );
+  }
 
   static String fileCode(int id) => 'WK-${id.toString().padLeft(5, '0')}';
 }
@@ -210,12 +209,7 @@ class ArchiveSection extends StatelessWidget {
           end: .82,
           child: AppText(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              height: 1.25,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -.3,
-            ),
+            style: WkType.titleM,
           ),
         ),
         if (subtitle.isNotEmpty) ...[

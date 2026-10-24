@@ -110,14 +110,14 @@ class OfflineBookMenu extends StatelessWidget {
             reduceMotion: reduceMotion,
             onPressed: active
                 ? () => repository.cancel(novel.id)
-                : () => _show(anchor),
+                : () => showMenu(anchor),
           ),
         ),
       );
     },
   );
 
-  Future<void> _show(BuildContext context) async {
+  Future<void> showMenu(BuildContext context) async {
     final job = repository.jobFor(novel.id);
     final selected = await showGlassMenu<_BookAction>(
       context: context,

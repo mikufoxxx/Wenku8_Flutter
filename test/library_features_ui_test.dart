@@ -318,7 +318,7 @@ void main() {
       );
       scroll.position.jumpTo(1200);
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('dock-tab-2')));
+      await tester.tap(find.text('下一章'));
       await tester.pumpAndSettle();
       expect(scroll.position.pixels, 0);
       expect(state.chapterFor(5000), 1);

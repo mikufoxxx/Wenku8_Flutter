@@ -12,16 +12,32 @@ Finder readerPanelControl(String label) => find
     .first;
 
 Future<void> openReaderPanel(WidgetTester tester, {String tab = '排版'}) async {
+  if (tab == '听书') {
+    await tester.tap(find.text('听书').first);
+    await tester.pumpAndSettle();
+    return;
+  }
+  if (tab == '书签') {
+    await tester.tap(find.text('目录'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('书签'));
+    await tester.pumpAndSettle();
+    return;
+  }
+  final mapped = switch (tab) {
+    '操作' => '翻页',
+    _ => tab,
+  };
   await tester.tap(readerPanelControl('阅读设置'));
   await tester.pumpAndSettle();
-  if (tab != '排版') {
-    await tester.tap(find.text(tab));
+  if (mapped != '排版') {
+    await tester.tap(find.text(mapped));
     await tester.pumpAndSettle();
   }
 }
 
 Future<void> openReaderChapterProgress(WidgetTester tester) async {
-  await tester.tap(find.byKey(const ValueKey('dock-tab-1')));
+  await tester.tap(find.text('目录'));
   await tester.pumpAndSettle();
   expect(find.byKey(const ValueKey('reader-progress-slider')), findsOneWidget);
 }

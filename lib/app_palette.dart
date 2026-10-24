@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:material_color_utilities/material_color_utilities.dart';
 import 'archive_design.dart';
+import 'wk_tokens.dart';
 
 enum AppPaletteSource { original, system, custom }
 
@@ -171,9 +172,7 @@ class AppTonalColors extends ThemeExtension<AppTonalColors> {
           ? ArchiveDesign.darkSurface
           : s.surfaceContainerLow,
       active: original
-          ? Color.lerp(s.onSurface, s.surface, dark ? .46 : .48)!
-          : dark
-          ? Color.lerp(s.surface, s.primary, .62)!
+          ? (dark ? WkColor.darkInk : WkColor.ink)
           : s.primary,
       track: original
           ? Color.lerp(s.surface, s.onSurface, dark ? .16 : .10)!
