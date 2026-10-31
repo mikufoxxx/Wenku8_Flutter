@@ -8,14 +8,14 @@ class ReleaseSection {
 
 const releaseFreeNotice = '**本项目完全免费，无任何赞助、打赏或付费渠道。**';
 const releaseReadingNotice = '**在线内容以轻小说文库开放状态为准，不提供因版权限制而停止开放的在线书籍阅读。**';
-const _connection = '优化文库账号连接、验证和书籍加载。';
-const _sync = '新增 WebDAV 自动同步阅读进度。';
-const _reader = '阅读信息可选上下位置，新增纯白背景、文字颜色和透明度。';
-const _library = '支持书架正序／倒序，优化小组件显示与听书时长统计。';
-const _fixes = '修复 iOS 原文件关联、切换后台闪动等问题。';
-const _changes = [_connection, _sync, _reader, _library, _fixes];
+const _connection = '修复文库连接、登录确认和反复验证的问题。';
+const _tags = '修复标签页崩溃及部分书籍加载失败。';
+const _cache = '修复切换线路后的内容刷新和缓存重试。';
+const _reader = '修复 iPad 竖屏阅读显示异常。';
+const _keepsake = '修复阅读纪念保存、分享和预览布局。';
+const _changes = [_connection, _tags, _cache, _reader, _keepsake];
 const _installation =
-    'Android 可直接更新；iOS 与 HarmonyOS 安装包未签名，需自行签名后安装。升级前请备份重要书籍和阅读记录。';
+    'Android 可直接更新。iOS 与 HarmonyOS 提供未签名包，需自行签名；iOS 主应用和小组件均需签名。iOS／HarmonyOS 0.5.0 用户请先手动更新一次。升级前请备份重要数据。';
 const publicReleaseNotes =
     '''
 ### 免费使用，请勿付费
@@ -28,10 +28,10 @@ $releaseReadingNotice
 
 ### 本次更新
 - $_connection
-- $_sync
+- $_tags
+- $_cache
 - $_reader
-- $_library
-- $_fixes
+- $_keepsake
 
 ### 安装说明
 $_installation
