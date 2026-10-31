@@ -10,8 +10,9 @@ import re
 import subprocess
 import tempfile
 
-VERSION = "0.5.3"
-BUILD = 2273
+VERSION = "0.5.4"
+BUILD = 2274
+MAX_APK_BYTES = 60_000_000
 PACKAGE = "org.mewx.wenku8_flutter"
 CERTIFICATE = "4e48d6854c5d8cc35685d982aae9fd8d573263405af0b6f5eb69dd26a8dc9f80"
 ABIS = ("arm64-v8a", "armeabi-v7a", "x86_64")
@@ -49,7 +50,7 @@ def main():
     if actual_names != expected_names:
         raise ValueError("Draft input inventory mismatch")
     for asset in release["assets"]:
-        if not 0 < asset["size"] <= 300 * 1024 * 1024:
+        if not 0 < asset["size"] <= MAX_APK_BYTES:
             raise ValueError("Draft input size mismatch")
     sdk = Path(os.environ["ANDROID_HOME"])
     candidates = [p for p in (sdk / "build-tools").iterdir()
@@ -84,6 +85,8 @@ def main():
                 raise ValueError("Distribution signing certificate mismatch")
             check_package(command([str(tools / "aapt"), "dump", "badging", str(destination)],
                                   "Read signed package"), abi)
+            if destination.stat().st_size > MAX_APK_BYTES:
+                raise ValueError("Signed package exceeds the release size budget")
             print(f"{abi}: verified {VERSION}+{BUILD}, {destination.stat().st_size} bytes")
         command(["gh", "release", "upload", tag, "-R", repo,
                  *map(str, sorted(output.glob("*.apk")))], "Upload signed packages")
