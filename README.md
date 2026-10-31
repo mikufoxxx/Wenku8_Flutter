@@ -9,7 +9,7 @@
 
 ## 下载与更新
 
-当前版本：**[Android 0.5.2](https://github.com/mikufoxxx/Wenku8_Flutter/releases/tag/v0.5.2)** · **[iOS / HarmonyOS 0.5.2](https://github.com/mikufoxxx/Wenku8_Flutter/releases/tag/v0.5.2)**。
+当前版本：**[Android 0.5.4](https://github.com/mikufoxxx/Wenku8_Flutter/releases/tag/v0.5.4)** · **[iOS / HarmonyOS 0.5.4](https://github.com/mikufoxxx/Wenku8_Flutter/releases/tag/v0.5.4)**。
 
 Android 提供正式签名 APK；iOS 与 HarmonyOS 提供未签名安装包。请按设备选择：
 
@@ -17,11 +17,11 @@ Android 提供正式签名 APK；iOS 与 HarmonyOS 提供未签名安装包。�
 
 | 你的设备 | 选择安装包 |
 | :-- | :-- |
-| 近年的 Android 手机、平板 | [**ARM64 APK · 推荐**](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.2/wenku8-0.5.2-arm64-v8a.apk) |
-| 旧款 32 位 ARM 设备 | [ARMv7 APK](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.2/wenku8-0.5.2-armeabi-v7a.apk) |
-| x86_64 设备或模拟器 | [x86_64 APK](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.2/wenku8-0.5.2-x86_64.apk) |
-| iPhone、iPad | [未签名 IPA](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.2/wenku8-0.5.2-ios-unsigned.ipa) · 需自行签名 |
-| HarmonyOS 设备 | [未签名 HAP](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.2/wenku8-0.5.2-harmony-unsigned.hap) · 需自行签名 |
+| 近年的 Android 手机、平板 | [**ARM64 APK · 推荐**](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.4/wenku8-0.5.4-arm64-v8a.apk) |
+| 旧款 32 位 ARM 设备 | [ARMv7 APK](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.4/wenku8-0.5.4-armeabi-v7a.apk) |
+| x86_64 设备或模拟器 | [x86_64 APK](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.4/wenku8-0.5.4-x86_64.apk) |
+| iPhone、iPad | [未签名 IPA](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.4/wenku8-0.5.4-ios-unsigned.ipa) · 需自行签名 |
+| HarmonyOS 设备 | [未签名 HAP](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.4/wenku8-0.5.4-harmony-unsigned.hap) · 需自行签名 |
 
 **Android 正式版沿用原包名与签名，可直接覆盖升级，不要先卸载旧版。** iOS／HarmonyOS 包不能直接安装，需自行完成签名；覆盖安装取决于签名与设备授权。 升级、整理存储或同步前，请先备份重要数据。
 
@@ -43,7 +43,7 @@ App 内打开 **我的 → 关于 → 检查更新**，优先走镜像，连接�
   <img src="https://img.shields.io/badge/Android-signed-3DDC84?style=flat-square&amp;logo=android&amp;logoColor=white" alt="Android · 正式签名" />
   <img src="https://img.shields.io/badge/iOS-self--sign-555555?style=flat-square&amp;logo=apple&amp;logoColor=white" alt="iOS · 自行签名" />
   <img src="https://img.shields.io/badge/HarmonyOS-self--sign-3157D5?style=flat-square" alt="HarmonyOS · 自行签名" />
-  <img src="https://img.shields.io/badge/Android_build-2272-65756E?style=flat-square" alt="Android build 2272" />
+  <img src="https://img.shields.io/badge/Android_build-2274-65756E?style=flat-square" alt="Android build 2274" />
   <a href="assets/licenses/GPL-3.0.txt"><img src="https://img.shields.io/badge/License-GPL--3.0-blue?style=flat-square&amp;logo=gnu&amp;logoColor=white" alt="GPL 3.0" /></a>
 </p>
 
