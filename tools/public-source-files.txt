@@ -7,6 +7,7 @@ LICENSE
 NOTICE
 README.md
 README_EN.md
+README_ZH.md
 WenkuBookEngine.podspec
 analysis_options.yaml
 android/.gitignore
