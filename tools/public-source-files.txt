@@ -6,6 +6,7 @@ CHANGELOG.md
 LICENSE
 NOTICE
 README.md
+README_EN.md
 WenkuBookEngine.podspec
 analysis_options.yaml
 android/.gitignore
