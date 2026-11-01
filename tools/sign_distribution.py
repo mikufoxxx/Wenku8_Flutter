@@ -10,8 +10,8 @@ import re
 import subprocess
 import tempfile
 
-VERSION = "0.5.4"
-BUILD = 2274
+VERSION = "0.5.5"
+BUILD = 2276
 MAX_APK_BYTES = 60_000_000
 PACKAGE = "org.mewx.wenku8_flutter"
 CERTIFICATE = "4e48d6854c5d8cc35685d982aae9fd8d573263405af0b6f5eb69dd26a8dc9f80"
