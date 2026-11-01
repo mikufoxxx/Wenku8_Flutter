@@ -11,25 +11,14 @@
 
 ## Download and update
 
-Current version: **[Android 0.5.5](https://github.com/mikufoxxx/Wenku8_Flutter/releases/tag/v0.5.5)** · **[iOS / HarmonyOS 0.5.5](https://github.com/mikufoxxx/Wenku8_Flutter/releases/tag/v0.5.5)**.
+**Public downloads and app updates are currently withdrawn.** All GitHub releases are drafts, and the mirror no longer offers installation packages or release metadata.
 
 The project is now largely stable. Version 0.5.5 is expected to be the last regular update; future releases will be made only when necessary.
 
-Android releases are officially signed APKs. iOS and HarmonyOS packages are unsigned. Choose the package for your device:
+Keep your installed copy of the app. Back up original books and reading records before reorganizing storage or syncing.
 
-### [Download mirror →](https://git.3952039.xyz/#releases) · [GitHub Releases →](https://github.com/mikufoxxx/Wenku8_Flutter/releases/latest)
+[Mirror status](https://git.3952039.xyz/#releases) · [GitHub releases](https://github.com/mikufoxxx/Wenku8_Flutter/releases)
 
-| Your device | Package |
-| :-- | :-- |
-| Most recent Android phones and tablets | [**ARM64 APK · Recommended**](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.5/wenku8-0.5.5-arm64-v8a.apk) |
-| Older 32-bit ARM devices | [ARMv7 APK](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.5/wenku8-0.5.5-armeabi-v7a.apk) |
-| x86_64 devices or emulators | [x86_64 APK](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.5/wenku8-0.5.5-x86_64.apk) |
-| iPhone and iPad | [Unsigned IPA](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.5/wenku8-0.5.5-ios-unsigned.ipa) · Self-signing required |
-| HarmonyOS devices | [Unsigned HAP](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.5/wenku8-0.5.5-harmony-unsigned.hap) · Self-signing required |
-
-**Official Android releases retain the existing application ID and signing certificate, so you can update in place. Do not uninstall the old version first.** iOS and HarmonyOS packages require signing before installation; in-place updates depend on your signing identity and device authorization. Back up important data before upgrading, reorganizing storage, or syncing.
-
-In the app, open **My → About → Check for updates (我的 → 关于 → 检查更新)**. Updates use the mirror first and automatically fall back to GitHub if the connection fails. There is no need to choose a route.
 
 [Changelog (Chinese)](CHANGELOG.md) · [Reader guide (Chinese)](docs/READER.md) · [Report an issue](https://github.com/mikufoxxx/Wenku8_Flutter/issues)
 
@@ -140,7 +129,7 @@ Report bugs through [Issues](https://github.com/mikufoxxx/Wenku8_Flutter/issues)
 <details>
 <summary><b>About the source snapshot</b></summary>
 
-This repository shares selected implementation code for reference. It contains references to modules not included in the snapshot, cannot be built independently, and is not the complete corresponding source for the release packages. Release packages still include the full app functionality. Download them using the package links above; GitHub's automatically generated “Source code” archives are not app installers.
+This repository shares selected implementation code for reference. It contains references to modules not included in the snapshot, cannot be built independently, and is not the complete corresponding source for the release packages. Previously distributed release packages included the full app functionality. GitHub's automatically generated “Source code” archives are not app installers.
 
 [Source checks](https://github.com/mikufoxxx/Wenku8_Flutter/actions/workflows/flutter-ci.yml) validate only the public file inventory and publication boundaries. They do not build or modify release packages.
 

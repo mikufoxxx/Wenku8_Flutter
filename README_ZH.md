@@ -11,25 +11,14 @@
 
 ## 下载与更新
 
-当前版本：**[Android 0.5.5](https://github.com/mikufoxxx/Wenku8_Flutter/releases/tag/v0.5.5)** · **[iOS / HarmonyOS 0.5.5](https://github.com/mikufoxxx/Wenku8_Flutter/releases/tag/v0.5.5)**。
+**公开下载与应用内更新已下架。** GitHub 所有发行版均为草稿，镜像不再提供安装包或发行元数据。
 
 项目已趋于稳定，0.5.5 预计是最后一次常规更新。后续非必要不再发版。
 
-Android 提供正式签名 APK；iOS 与 HarmonyOS 提供未签名安装包。请按设备选择：
+请保留已安装的应用；整理存储或同步前，请先备份原书和阅读记录。
 
-### [镜像下载 →](https://git.3952039.xyz/#releases)　[GitHub Releases →](https://github.com/mikufoxxx/Wenku8_Flutter/releases/latest)
+[镜像状态](https://git.3952039.xyz/#releases) · [GitHub 发行版](https://github.com/mikufoxxx/Wenku8_Flutter/releases)
 
-| 你的设备 | 选择安装包 |
-| :-- | :-- |
-| 近年的 Android 手机、平板 | [**ARM64 APK · 推荐**](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.5/wenku8-0.5.5-arm64-v8a.apk) |
-| 旧款 32 位 ARM 设备 | [ARMv7 APK](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.5/wenku8-0.5.5-armeabi-v7a.apk) |
-| x86_64 设备或模拟器 | [x86_64 APK](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.5/wenku8-0.5.5-x86_64.apk) |
-| iPhone、iPad | [未签名 IPA](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.5/wenku8-0.5.5-ios-unsigned.ipa) · 需自行签名 |
-| HarmonyOS 设备 | [未签名 HAP](https://github.com/mikufoxxx/Wenku8_Flutter/releases/download/v0.5.5/wenku8-0.5.5-harmony-unsigned.hap) · 需自行签名 |
-
-**Android 正式版沿用原包名与签名，可直接覆盖升级，不要先卸载旧版。** iOS／HarmonyOS 包不能直接安装，需自行完成签名；覆盖安装取决于签名与设备授权。 升级、整理存储或同步前，请先备份重要数据。
-
-App 内打开 **我的 → 关于 → 检查更新**，优先走镜像，连接失败时自动回退到 GitHub，无需选择线路。
 
 [完整更新说明](CHANGELOG.md) · [阅读指南](docs/READER.md) · [反馈问题](https://github.com/mikufoxxx/Wenku8_Flutter/issues)
 
@@ -140,7 +129,7 @@ App 内打开 **我的 → 关于 → 检查更新**，优先走镜像，连接�
 <details>
 <summary><b>源码快照说明</b></summary>
 
-仓库提供部分实现供参考，包含未随快照提供的模块引用，不能独立构建，也不是 Release 安装包的完整对应源码。Release 中的安装包仍为完整功能版本；请从上方安装包链接下载，不要将 GitHub 自动生成的 Source code 压缩包当作安装包。
+仓库提供部分实现供参考，包含未随快照提供的模块引用，不能独立构建，也不是 Release 安装包的完整对应源码。此前发行的安装包为完整功能版本；GitHub 自动生成的 Source code 压缩包不是安装包。
 
 [Source checks](https://github.com/mikufoxxx/Wenku8_Flutter/actions/workflows/flutter-ci.yml) 仅检查公开文件清单与上传边界，不构建或更改发行版。
 
