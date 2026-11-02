@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="124" height="36" viewBox="0 0 124 36" role="img" aria-labelledby="title">
+  <title id="title">简体中文</title>
+  <path d="M0 .5H106c9.665 0 17.5 7.835 17.5 17.5S115.665 35.5 106 35.5H0" fill="#181e1b" stroke="#36433a"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="14">
+  <text x="62" y="23" text-anchor="middle" fill="#afbbb1" font-weight="500">简体中文</text>
+  </g>
+</svg>

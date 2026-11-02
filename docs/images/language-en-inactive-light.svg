@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="124" height="36" viewBox="0 0 124 36" role="img" aria-labelledby="title">
+  <title id="title">English</title>
+  <path d="M124 .5H18C8.335 .5 .5 8.335 .5 18S8.335 35.5 18 35.5H124" fill="#f5f4ee" stroke="#dfe2d8"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="14">
+  <text x="62" y="23" text-anchor="middle" fill="#68766c" font-weight="500">English</text>
+  </g>
+</svg>

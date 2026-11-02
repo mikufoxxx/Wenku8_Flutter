@@ -1,10 +1,17 @@
 # 轻小说文库 · Wenku8 Flutter
 
-[English](README.md) · **简体中文**
+<p>
+  <a href="README.md" title="Read in English"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/language-en-inactive-dark.svg" /><img src="docs/images/language-en-inactive-light.svg" width="124" height="36" alt="English" /></picture></a><a href="README_ZH.md" title="简体中文 · 当前语言"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/language-zh-active-dark.svg" /><img src="docs/images/language-zh-active-light.svg" width="124" height="36" alt="简体中文（当前语言）" /></picture></a>
+</p>
 
-## 赞助支持
+<a href="https://afdian.com/a/mikufoxxx">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/sponsor-zh-dark.svg" />
+    <img src="docs/images/sponsor-zh-light.svg" width="640" alt="通过爱发电支持这个项目" />
+  </picture>
+</a>
 
-如果这个项目对你有帮助，欢迎通过 [爱发电赞助支持开发者](https://afdian.com/a/mikufoxxx)。赞助完全自愿，所有功能仍免费使用。
+赞助完全自愿，所有功能仍免费使用。
 
 > [!IMPORTANT]
 > **本项目仅为第三方阅读客户端，提供阅读界面与本地书籍管理，不运营在线书库、不自行发布小说资源，安装包不附带小说文件。在线内容及可读状态一切以 Wenku8 为准；不提供因版权限制而停止开放的在线书籍阅读。**

@@ -1,10 +1,17 @@
 # Light Novel Library · Wenku8 Flutter
 
-**English** · [简体中文](README_ZH.md)
+<p>
+  <a href="README.md" title="English · Current language"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/language-en-active-dark.svg" /><img src="docs/images/language-en-active-light.svg" width="124" height="36" alt="English (current language)" /></picture></a><a href="README_ZH.md" title="切换到简体中文"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/language-zh-inactive-dark.svg" /><img src="docs/images/language-zh-inactive-light.svg" width="124" height="36" alt="简体中文" /></picture></a>
+</p>
 
-## Support the project
+<a href="https://afdian.com/a/mikufoxxx">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/sponsor-en-dark.svg" />
+    <img src="docs/images/sponsor-en-light.svg" width="640" alt="Support this project on AFDIAN" />
+  </picture>
+</a>
 
-If you find this app useful, you can [support the developer on AFDIAN](https://afdian.com/a/mikufoxxx). Sponsorship is entirely voluntary; all app features remain free.
+Voluntary support. All features remain free.
 
 > [!IMPORTANT]
 > **This is a third-party reading client for reading and managing local books. It does not operate an online library, publish novels, or bundle novel files. Online content and availability are determined by Wenku8; the app does not provide online access to books withdrawn for copyright reasons.**
