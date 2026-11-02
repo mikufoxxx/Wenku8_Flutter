@@ -351,13 +351,13 @@ export const HOME = `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><me
 @media(max-width:480px){main{padding:64px 20px 48px}.sponsor{grid-template-columns:44px minmax(0,1fr) auto;gap:12px;padding:16px}.sponsor-art{width:44px;height:44px}.sponsor-title{font-size:20px}.sponsor-cta{gap:10px;min-height:42px;padding:8px 14px;font-size:16px}.sponsor-cta svg{width:16px;height:16px}}@media(prefers-reduced-motion:reduce){.sponsor{transition:none}}
 </style>
 <main><header><small>WENKU8 / READING ARCHIVE</small><h1>把故事，留在手边。</h1>
-<a class="sponsor" href="https://afdian.com/a/mikufoxxx" target="_blank" rel="noopener noreferrer" aria-label="通过爱发电赞助支持开发者">
+<a class="sponsor" href="https://afdian.com/a/mikufoxxx" target="_blank" rel="noopener noreferrer" aria-label="在爱发电请我喝杯咖啡">
   <svg class="sponsor-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
     <rect width="64" height="64" rx="17" fill="#e6ebdf"/>
     <g fill="none" stroke="#617967" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 22c-6-4-12-5-20-3v25c8-2 14-1 20 3 6-4 12-5 20-3V19c-8-2-14-1-20 3Z"/><path d="M32 23v23M17 26c4-.5 7 0 10 2M17 33c4-.5 7 0 10 2M37 28c3-2 6-2.5 10-2M37 35c3-2 6-2.5 10-2"/></g>
     <path d="M48 12c-2.2-3.2-7-1.5-6.5 2.1.3 2.2 3.8 4.7 6.5 6.9 2.7-2.2 6.2-4.7 6.5-6.9.5-3.6-4.3-5.3-6.5-2.1Z" fill="#7656b8"/>
   </svg>
-  <span class="sponsor-title">支持这个项目</span>
+  <span class="sponsor-title">请我喝杯咖啡</span>
   <span class="sponsor-cta">爱发电<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 16 16 4M5 4h11v11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
 </a>
 <p class="sponsor-note">赞助完全自愿，所有功能仍免费使用。</p>

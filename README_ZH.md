@@ -7,7 +7,7 @@
 <a href="https://afdian.com/a/mikufoxxx">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/sponsor-zh-dark.svg" />
-    <img src="docs/images/sponsor-zh-light.svg" width="640" alt="通过爱发电支持这个项目" />
+    <img src="docs/images/sponsor-zh-light.svg" width="640" alt="在爱发电请我喝杯咖啡" />
   </picture>
 </a>
 
