@@ -2,10 +2,14 @@
 
 **English** · [简体中文](README_ZH.md)
 
+## Support the project
+
+If you find this app useful, you can [support the developer on AFDIAN](https://afdian.com/a/mikufoxxx). Sponsorship is entirely voluntary; all app features remain free.
+
 > [!IMPORTANT]
 > **This is a third-party reading client for reading and managing local books. It does not operate an online library, publish novels, or bundle novel files. Online content and availability are determined by Wenku8; the app does not provide online access to books withdrawn for copyright reasons.**
 >
-> **The app is entirely free, with no sponsorship, donation, or payment channels.** We do not sell memberships, activation codes, or feature unlocks. Anyone charging money or soliciting donations in the name of this project or its developer is unaffiliated with the project. Do not pay them.
+> **The app is entirely free.** We do not sell memberships, activation codes, or feature unlocks. Please beware of anyone charging for access in the name of this project or its developer.
 >
 > **Only Wenku8 and local imports are supported. Other sources and custom book sources are no longer supported.** The app supports Android, iOS, and HarmonyOS and is not an official Wenku8 app.
 
