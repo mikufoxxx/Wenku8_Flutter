@@ -13,13 +13,6 @@
 
 Voluntary support. All features remain free.
 
-> [!IMPORTANT]
-> **This is a third-party reading client for reading and managing local books. It does not operate an online library, publish novels, or bundle novel files. Online content and availability are determined by Wenku8; the app does not provide online access to books withdrawn for copyright reasons.**
->
-> **The app is entirely free.** We do not sell memberships, activation codes, or feature unlocks. Please beware of anyone charging for access in the name of this project or its developer.
->
-> **Only Wenku8 and local imports are supported. Other sources and custom book sources are no longer supported.** The app supports Android, iOS, and HarmonyOS and is not an official Wenku8 app.
-
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/readme-cover-dark.svg" />
@@ -39,6 +32,13 @@ Voluntary support. All features remain free.
 </p>
 
 Milky glass, editorial typography, and a three-dimensional bookshelf. Discover a book, organize your local library, then settle into offline reading or text-to-speech.
+
+> [!IMPORTANT]
+> **This is a third-party reading client for reading and managing local books. It does not operate an online library, publish novels, or bundle novel files. Online content and availability are determined by Wenku8; the app does not provide online access to books withdrawn for copyright reasons.**
+>
+> **The app is entirely free.** We do not sell memberships, activation codes, or feature unlocks. Please beware of anyone charging for access in the name of this project or its developer.
+>
+> **Only Wenku8 and local imports are supported. Other sources and custom book sources are no longer supported.** The app supports Android, iOS, and HarmonyOS and is not an official Wenku8 app.
 
 ## A look inside
 
