@@ -7,7 +7,7 @@
 <a href="https://afdian.com/a/mikufoxxx">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/sponsor-en-dark.svg" />
-    <img src="docs/images/sponsor-en-light.svg" width="640" alt="Support this project on AFDIAN" />
+    <img src="docs/images/sponsor-en-light.svg" width="640" alt="Buy me a coffee on AFDIAN" />
   </picture>
 </a>
 
