@@ -20,19 +20,6 @@
 >
 > **仅支持轻小说文库及本地导入，不再支持其他源或自定义书源。** 支持 Android、iOS 与 HarmonyOS，并非轻小说文库网站的官方应用。
 
-## 下载与更新
-
-**公开下载与应用内更新已下架。** GitHub 所有发行版均为草稿，镜像不再提供安装包或发行元数据。
-
-项目已趋于稳定，0.5.5 预计是最后一次常规更新。后续非必要不再发版。
-
-请保留已安装的应用；整理存储或同步前，请先备份原书和阅读记录。
-
-[镜像状态](https://git.3952039.xyz/#releases) · [GitHub 发行版](https://github.com/mikufoxxx/Wenku8_Flutter/releases)
-
-
-[完整更新说明](CHANGELOG.md) · [阅读指南](docs/READER.md) · [反馈问题](https://github.com/mikufoxxx/Wenku8_Flutter/issues)
-
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/readme-cover-dark.svg" />

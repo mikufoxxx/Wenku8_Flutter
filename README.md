@@ -20,19 +20,6 @@ Voluntary support. All features remain free.
 >
 > **Only Wenku8 and local imports are supported. Other sources and custom book sources are no longer supported.** The app supports Android, iOS, and HarmonyOS and is not an official Wenku8 app.
 
-## Download and update
-
-**Public downloads and app updates are currently withdrawn.** All GitHub releases are drafts, and the mirror no longer offers installation packages or release metadata.
-
-The project is now largely stable. Version 0.5.5 is expected to be the last regular update; future releases will be made only when necessary.
-
-Keep your installed copy of the app. Back up original books and reading records before reorganizing storage or syncing.
-
-[Mirror status](https://git.3952039.xyz/#releases) · [GitHub releases](https://github.com/mikufoxxx/Wenku8_Flutter/releases)
-
-
-[Changelog (Chinese)](CHANGELOG.md) · [Reader guide (Chinese)](docs/READER.md) · [Report an issue](https://github.com/mikufoxxx/Wenku8_Flutter/issues)
-
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/readme-cover-dark.svg" />
