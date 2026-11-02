@@ -1,5 +1,6 @@
 .githooks/pre-push
 .github/workflows/flutter-ci.yml
+.github/workflows/project-pages.yml
 .github/workflows/sign-distribution.yml
 .gitignore
 CHANGELOG.md
@@ -8,6 +9,10 @@ NOTICE
 README.md
 README_EN.md
 README_ZH.md
+site/content.json
+site/template.html
+site/site.css
+tools/build_project_site.py
 WenkuBookEngine.podspec
 analysis_options.yaml
 android/.gitignore

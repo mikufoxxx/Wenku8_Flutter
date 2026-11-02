@@ -1,0 +1,40 @@
+{
+  "en": {
+    "lang": "en", "title": "Light Novel Library · Keep your stories close.",
+    "description": "A free, independent Wenku8 and local-book reader for Android, iOS and HarmonyOS.",
+    "name": "Light Novel Library", "other_language": "简体中文", "other_page": "zh.html", "current_language": "English",
+    "eyebrow": "ANDROID / iOS / HARMONYOS",
+    "headline_first": "Keep your", "headline_second": "stories close.",
+    "intro": "Discover a book, make room for it on your shelf, then settle into reading. An independent reader for Wenku8 and the books you bring with you.",
+    "project": "Explore the project", "feedback": "Feedback", "coffee": "Buy me a coffee on AFDIAN",
+    "support_note": "Voluntary support. All features remain free.",
+    "chapter": "A PLACE FOR EVERY STORY", "section_title": "From discovery to the last page.",
+    "discover_title": "Find your next story.", "discover_body": "Browse books, authors and categories. Keep your favorites close on a three-dimensional bookshelf.",
+    "read_title": "Read at your own pace.", "read_body": "Horizontal, vertical or scrolling. Shape the type, spacing and page to suit you, or listen with text-to-speech.",
+    "personalize_title": "Make it feel like yours.", "personalize_body": "A quiet glass interface, thoughtful color choices and a local library that fits your own collection.",
+    "discover_alt": "Discovery screen with a three-dimensional bookshelf", "read_alt": "Reader with customizable typography", "personalize_alt": "App appearance and color preferences",
+    "demo": "Screens use demo book data. The app interface is in Chinese.",
+    "note_title": "Independent by design.", "note": "This is a third-party reading client. It does not operate Wenku8, publish novels or bundle book files. Online content and availability are determined by Wenku8; local books are imported by you.",
+    "feedback_note": "Feedback is accepted for the latest app version only. Wenku8 network and website availability issues are not handled here.",
+    "source_note": "About the source snapshot", "license": "Licenses & acknowledgments"
+  },
+  "zh": {
+    "lang": "zh-CN", "title": "轻小说文库 · 把故事，留在手边。",
+    "description": "适用于 Android、iOS 与 HarmonyOS 的免费第三方 Wenku8 与本地书籍阅读客户端。",
+    "name": "轻小说文库", "other_language": "English", "other_page": "index.html", "current_language": "简体中文",
+    "eyebrow": "ANDROID / iOS / HARMONYOS",
+    "headline_first": "把故事，", "headline_second": "留在手边。",
+    "intro": "发现一本书，为它留一格书架，再安心读下去。为轻小说文库与自己的本地藏书，留一个轻盈、安静的阅读空间。",
+    "project": "浏览项目", "feedback": "问题反馈", "coffee": "在爱发电请我喝杯咖啡",
+    "support_note": "赞助完全自愿，所有功能仍免费使用。",
+    "chapter": "为每一个故事留一席之地", "section_title": "从发现，到最后一页。",
+    "discover_title": "找到下一段故事。", "discover_body": "浏览书目、作者与分类，把喜欢的作品留在立体书架上，随时回到故事里。",
+    "read_title": "按自己的节奏阅读。", "read_body": "横排、竖排或滚动，自由调整字形、间距与页面，也可以换一种方式听故事。",
+    "personalize_title": "让阅读更像自己。", "personalize_body": "安静的玻璃界面、合拍的配色，与容纳个人藏书的本地书库，一起适应你的习惯。",
+    "discover_alt": "发现页与立体书架", "read_alt": "可自定义排版的阅读器", "personalize_alt": "应用外观与配色设置",
+    "demo": "界面书目为演示数据。应用界面为中文。",
+    "note_title": "独立，也有边界。", "note": "本项目是第三方阅读客户端，不运营 Wenku8 站点，不自行发布小说资源，安装包不附带小说文件。在线内容及可读状态以 Wenku8 为准；本地书籍由你自行导入。",
+    "feedback_note": "仅接受最新版本的应用问题反馈。Wenku8 网络与站点可用性问题不受理，也不回复。",
+    "source_note": "源码快照说明", "license": "许可与致谢"
+  }
+}

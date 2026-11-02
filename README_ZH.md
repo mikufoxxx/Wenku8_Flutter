@@ -13,6 +13,8 @@
 
 赞助完全自愿，所有功能仍免费使用。
 
+[项目主页 →](https://mikufoxxx.github.io/Wenku8_Flutter/zh.html)
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/readme-cover-dark.svg" />

@@ -13,6 +13,8 @@
 
 Voluntary support. All features remain free.
 
+[Project website →](https://mikufoxxx.github.io/Wenku8_Flutter/)
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/readme-cover-dark.svg" />
