@@ -82,7 +82,7 @@ async function init() {
       } else if (points.length) svg.append(svgNode('line', { x1: points[0].x, x2: points[0].x, y1: points[0].y, y2: baseline, class: 'stem' }));
       for (const p of points) {
         const label = `${p.day}: ${p.capped ? '≥ ' : ''}${number(p.active)}`;
-        const circle = svgNode('circle', { cx: p.x, cy: p.y, r: points.length === 1 ? 7 : 4, class: 'point', tabindex: 0, 'aria-label': label });
+        const circle = svgNode('circle', { cx: p.x, cy: p.y, r: points.length === 1 ? 7 : points.length > 14 ? 2.5 : 4, class: 'point', tabindex: 0, 'aria-label': label });
         circle.append(svgNode('title', {}, label)); svg.append(circle);
       }
       const indices = [...new Set(points.length < 3 ? points.map((_, i) => i) : [0, Math.floor((points.length - 1) / 2), points.length - 1])];
@@ -92,6 +92,7 @@ async function init() {
       if (rows.some(row => row.capped)) notes.push(root.dataset.capped);
       if (rows.length < 2) notes.push(rows.length ? root.dataset.single : root.dataset.empty);
       status.textContent = notes.join(' ');
+      root.querySelector('.activity-details').hidden = rows.length === 0;
       const body = root.querySelector('[data-activity-rows]'); body.replaceChildren();
       for (const row of [...rows].reverse()) {
         const tr = document.createElement('tr');
@@ -112,6 +113,8 @@ async function init() {
     if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => render(selected)).observe(svg.parentElement);
   } catch {
     status.textContent = root.dataset.error;
+    svg.classList.add('is-unavailable');
+    root.querySelector('.activity-details').hidden = true;
     for (const button of root.querySelectorAll('[data-range]')) button.disabled = true;
   }
 }
