@@ -10,9 +10,13 @@ README.md
 README_EN.md
 README_ZH.md
 site/content.json
+site/activity.css
+site/activity.mjs
+site/README.md
 site/template.html
 site/site.css
 tools/build_project_site.py
+tools/fetch_activity_snapshot.py
 WenkuBookEngine.podspec
 analysis_options.yaml
 android/.gitignore

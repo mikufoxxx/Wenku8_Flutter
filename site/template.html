@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="$description">
   <meta name="color-scheme" content="light dark">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
   <title>$title</title>
   <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="activity.css">
+  <script type="module" src="activity.mjs"></script>
 </head>
 <body>
   <header class="masthead wrap">
@@ -20,7 +22,7 @@
         <p class="eyebrow">$eyebrow</p>
         <h1 id="hero-title">$headline_first<br><em>$headline_second</em></h1>
         <p class="intro">$intro</p>
-        <div class="actions"><a class="primary" href="https://github.com/mikufoxxx/Wenku8_Flutter">$project <span aria-hidden="true">↗</span></a><a class="text-link" href="https://github.com/mikufoxxx/Wenku8_Flutter/issues">$feedback <span aria-hidden="true">↗</span></a></div>
+        <div class="actions"><a class="primary" href="https://github.com/mikufoxxx/Wenku8_Flutter">$project <span aria-hidden="true">↗</span></a><a class="text-link" href="https://github.com/mikufoxxx/Wenku8_Flutter/issues">$feedback <span aria-hidden="true">↗</span></a><a class="text-link" href="#activity">$activity_title <span aria-hidden="true">↓</span></a></div>
         <a class="sponsor" href="https://afdian.com/a/mikufoxxx" aria-label="$coffee"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/sponsor-$locale-dark.svg"><img src="assets/sponsor-$locale-light.svg" width="640" height="112" alt="$coffee"></picture></a>
         <p class="support-note">$support_note</p>
       </div>
@@ -30,6 +32,18 @@
       <p class="eyebrow">$chapter</p><h2 id="experience-title">$section_title</h2>
       <div class="features"><article><span class="number">01</span><h3>$discover_title</h3><p>$discover_body</p></article><article><span class="number">02</span><h3>$read_title</h3><p>$read_body</p></article><article><span class="number">03</span><h3>$personalize_title</h3><p>$personalize_body</p></article></div>
       <div class="reading-pair"><figure><img src="assets/reader.png" width="1080" height="2400" loading="lazy" alt="$read_alt"><figcaption>02 / READ</figcaption></figure><figure><img src="assets/settings.png" width="1080" height="2400" loading="lazy" alt="$personalize_alt"><figcaption>03 / PERSONALIZE</figcaption></figure></div>
+    </section>
+    <section class="activity wrap" id="activity" aria-labelledby="activity-title" data-activity data-locale="$locale" data-empty="$activity_empty" data-single="$activity_single" data-error="$activity_error" data-stale="$activity_stale" data-capped="$activity_capped" data-latest="$activity_latest" data-period="$activity_period">
+      <div class="activity-heading"><div><p class="eyebrow">COMMUNITY / ACTIVITY</p><h2 id="activity-title">$activity_title</h2></div><div class="activity-range" role="group" aria-label="$activity_period"><button type="button" data-range="7" aria-pressed="true">$activity_7</button><button type="button" data-range="30" aria-pressed="false">$activity_30</button></div></div>
+      <div class="activity-overview"><div class="activity-total"><p data-total-label>$activity_today</p><strong data-total>—</strong><p class="activity-day" data-day>—</p></div><div class="activity-platforms" aria-label="$activity_platforms">
+        <div class="activity-platform"><div><span>Android</span><strong data-count="android">—</strong></div><meter data-meter="android" min="0" max="1" value="0" aria-label="Android"></meter></div>
+        <div class="activity-platform"><div><span>iOS</span><strong data-count="ios">—</strong></div><meter data-meter="ios" min="0" max="1" value="0" aria-label="iOS"></meter></div>
+        <div class="activity-platform"><div><span>HarmonyOS</span><strong data-count="harmony">—</strong></div><meter data-meter="harmony" min="0" max="1" value="0" aria-label="HarmonyOS"></meter></div>
+      </div></div>
+      <figure class="activity-chart"><div class="activity-chart-heading"><h3>$activity_trend</h3><span data-period-label></span></div><svg data-chart viewBox="0 0 1000 300" role="img" aria-label="$activity_trend"></svg><figcaption data-status role="status">$activity_loading</figcaption></figure>
+      <details class="activity-details"><summary>$activity_table</summary><div class="activity-table-scroll" tabindex="0" role="region" aria-label="$activity_table"><table><thead><tr><th scope="col">$activity_date</th><th scope="col">$activity_title</th><th scope="col">Android</th><th scope="col">iOS</th><th scope="col">HarmonyOS</th></tr></thead><tbody data-activity-rows></tbody></table></div></details>
+      <div class="activity-footer"><p>$activity_updated <time data-updated>—</time> · UTC+8</p><p>$activity_scope</p></div>
+      <noscript><p>$activity_error</p></noscript>
     </section>
     <aside class="notice wrap"><h2>$note_title</h2><p>$note</p><p class="feedback-note">$feedback_note</p></aside>
   </main>

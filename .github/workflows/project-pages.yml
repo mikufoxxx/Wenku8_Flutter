@@ -3,8 +3,10 @@ name: Publish project page
 on:
   push:
     branches: ['master']
-    paths: ['site/**', 'docs/images/**', 'tools/build_project_site.py', '.github/workflows/project-pages.yml']
+    paths: ['site/**', 'docs/images/**', 'tools/build_project_site.py', 'tools/fetch_activity_snapshot.py', '.github/workflows/project-pages.yml']
   workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
 
 permissions:
   contents: read
@@ -16,6 +18,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       pages: write
@@ -28,7 +31,11 @@ jobs:
         with:
           persist-credentials: false
       - run: python3 tools/check_public_source.py --revision "$(git rev-parse HEAD)"
-      - run: python3 tools/build_project_site.py
+      - name: Fetch aggregate daily activity
+        env:
+          ACTIVITY_EXPORT_TOKEN: ${{ secrets.ACTIVITY_EXPORT_TOKEN }}
+        run: python3 tools/fetch_activity_snapshot.py --output build/activity-snapshot.json
+      - run: python3 tools/build_project_site.py --activity-snapshot build/activity-snapshot.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -133,6 +133,7 @@ key.properties
 !/tools/test_prepare_release.py
 !/tools/check_public_source.py
 !/tools/build_project_site.py
+!/tools/fetch_activity_snapshot.py
 !/tools/test_public_source_policy.py
 !/tools/public-source-files.txt
 !/tools/create_update_fixtures.py
